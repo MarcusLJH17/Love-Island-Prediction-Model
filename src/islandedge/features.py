@@ -16,7 +16,18 @@ from islandedge.storage import (
 
 
 SOCIAL_SOURCES = ("reddit", "twitter")
-ALL_SOURCES = ("reddit", "twitter", "trends", "tiktok", "episode", "personal")
+ALL_SOURCES = ("reddit", "twitter", "trends", "tiktok", "episode", "personal", "show")
+
+SEASON8_POST_CASA_PRIORS = {
+    "s8-bryce": 0.82,
+    "s8-trinity": 0.84,
+    "s8-aniya": 0.46,
+    "s8-carl": 0.42,
+    "s8-amora": 0.30,
+    "s8-kc": -0.38,
+    "s8-corbin": -0.30,
+    "s8-sincere": -0.22,
+}
 
 
 @dataclass(frozen=True)
@@ -92,6 +103,8 @@ def build_feature_rows(database_path, season: int, feature_date: date, day: int,
         availability["tiktok"] = tiktok_score is not None
         availability["personal"] = personal_score is not None
         availability["episode"] = personal_score is not None
+        show_prior = show_prior_score(season, contestant.id, day)
+        availability["show"] = show_prior != 0
 
         rows.append(
             {
@@ -105,6 +118,7 @@ def build_feature_rows(database_path, season: int, feature_date: date, day: int,
                 "tiktok_score": tiktok_score,
                 "episode_score": personal_score,
                 "personal_score": personal_score,
+                "show_prior_score": show_prior,
                 "social_3d_score": rolling_social_score(source_lookup, contestant.id, feature_date, 3),
                 "social_7d_score": rolling_social_score(source_lookup, contestant.id, feature_date, 7),
                 "source_availability_json": json.dumps(availability, sort_keys=True),
@@ -124,6 +138,7 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
             "tiktok": row["tiktok_score"],
             "episode": row["episode_score"],
             "personal": row["personal_score"],
+            "show": row["show_prior_score"],
             "social3d": row["social_3d_score"],
             "social7d": row["social_7d_score"],
         }
@@ -155,14 +170,21 @@ def weighted_score(row: dict) -> float:
     score = 0.0
     current_social = mean_present([row["reddit_score"], row["twitter_score"]])
     if current_social is not None:
-        score += current_social * 0.45
-    score += float(row["social_3d_score"]) * 0.30
-    score += float(row["social_7d_score"]) * 0.15
+        score += current_social * 0.24
+    score += float(row["social_3d_score"]) * 0.18
+    score += float(row["social_7d_score"]) * 0.08
+    score += float(row["show_prior_score"]) * 0.58
     for optional_key in ("tiktok_score", "episode_score", "personal_score"):
         value = row[optional_key]
         if value is not None:
             score += float(value) * 0.10
     return score
+
+
+def show_prior_score(season: int, contestant_id: str, day: int) -> float:
+    if season == 8 and day >= 24:
+        return SEASON8_POST_CASA_PRIORS.get(contestant_id, 0.0)
+    return 0.0
 
 
 def load_source_lookup(database_path, season: int, feature_date: date, days: int):

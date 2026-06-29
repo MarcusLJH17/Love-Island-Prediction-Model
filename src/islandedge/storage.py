@@ -242,7 +242,13 @@ def replace_daily_source_metrics(database_path: Path, rows: Iterable[dict]) -> N
 
 def replace_model_features(database_path: Path, rows: Iterable[dict]) -> None:
     initialize(database_path)
+    rows = list(rows)
     with connect(database_path) as connection:
+        for season, feature_date in sorted({(row["season"], row["feature_date"]) for row in rows}):
+            connection.execute(
+                "DELETE FROM daily_model_features WHERE season = ? AND feature_date = ?",
+                (season, feature_date),
+            )
         connection.executemany(
             """
             INSERT INTO daily_model_features (
@@ -267,13 +273,19 @@ def replace_model_features(database_path: Path, rows: Iterable[dict]) -> None:
               social_7d_score = excluded.social_7d_score,
               source_availability_json = excluded.source_availability_json
             """,
-            list(rows),
+            rows,
         )
 
 
 def replace_predictions(database_path: Path, rows: Iterable[dict]) -> None:
     initialize(database_path)
+    rows = list(rows)
     with connect(database_path) as connection:
+        for season, feature_date in sorted({(row["season"], row["feature_date"]) for row in rows}):
+            connection.execute(
+                "DELETE FROM predictions WHERE season = ? AND feature_date = ?",
+                (season, feature_date),
+            )
         connection.executemany(
             """
             INSERT INTO predictions (
@@ -291,7 +303,7 @@ def replace_predictions(database_path: Path, rows: Iterable[dict]) -> None:
               source_breakdown_json = excluded.source_breakdown_json,
               source_availability_json = excluded.source_availability_json
             """,
-            list(rows),
+            rows,
         )
 
 
