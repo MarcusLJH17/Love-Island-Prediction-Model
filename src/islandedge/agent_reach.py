@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import shutil
 import subprocess
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
@@ -26,13 +27,31 @@ def run_agent_reach(command: list[str], timeout_seconds: int) -> str:
     home = os.path.expanduser("~")
     extra_paths = [
         os.path.join(home, ".local", "bin"),
+        os.path.join(os.getenv("APPDATA", ""), "npm"),
         os.path.join(os.getenv("APPDATA", ""), "Python", "Python312", "Scripts"),
     ]
     env["PATH"] = os.pathsep.join([*extra_paths, env.get("PATH", "")])
+    if command[0] == "opencli":
+        opencli_entry = os.path.join(
+            os.getenv("APPDATA", ""),
+            "npm",
+            "node_modules",
+            "@jackwener",
+            "opencli",
+            "dist",
+            "src",
+            "main.js",
+        )
+        resolved_command = ["node", opencli_entry, *command[1:]]
+    else:
+        executable = shutil.which(command[0], path=env["PATH"])
+        resolved_command = [executable or command[0], *command[1:]]
     completed = subprocess.run(
-        command,
+        resolved_command,
         check=True,
         capture_output=True,
+        encoding="utf-8",
+        errors="replace",
         env=env,
         text=True,
         timeout=timeout_seconds,
@@ -43,24 +62,15 @@ def run_agent_reach(command: list[str], timeout_seconds: int) -> str:
 def twitter_queries(contestants: Iterable[Contestant]) -> list[str]:
     queries: list[str] = []
     for contestant in contestants:
-        for name in contestant_query_names(contestant):
-            queries.extend(
-                [
-                    f'"{name}" "Love Island"',
-                    f'"{name}" "Love Island USA"',
-                    f'"{name}" villa',
-                ]
-            )
-    queries.extend(['"Love Island USA"', '"LIUSA"', '"Casa Amor" "Love Island USA"'])
+        queries.append(f"{contestant.display_name} Love Island USA")
+        if contestant.full_name != contestant.display_name:
+            queries.append(f"{contestant.full_name} Love Island USA")
+    queries.extend(["Love Island USA", "LIUSA", "Casa Amor Love Island USA"])
     return dedupe(queries)
 
 
 def reddit_queries(contestants: Iterable[Contestant], subreddit: str = "LoveIslandUSA") -> list[str]:
-    queries = [
-        name
-        for contestant in contestants
-        for name in contestant_query_names(contestant)
-    ]
+    queries = [contestant.display_name for contestant in contestants]
     queries.extend(["recoupling", "casa", "episode"])
     return dedupe(queries)
 

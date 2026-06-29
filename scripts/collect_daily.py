@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import subprocess
 import sys
 from datetime import date
 from pathlib import Path
@@ -27,6 +28,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--date", default=date.today().isoformat(), help="Feature date in YYYY-MM-DD format.")
     parser.add_argument("--day", type=int, required=True, help="Love Island season day represented by this collection.")
     parser.add_argument("--source", choices=("twitter", "reddit", "all"), default="all")
+    parser.add_argument("--max-queries", type=int, default=0, help="Stop after N generated queries. Use 0 for no cap.")
     parser.add_argument("--dry-run", action="store_true", help="Print queries without calling Agent-Reach.")
     return parser.parse_args()
 
@@ -49,6 +51,8 @@ def main() -> None:
             SearchRequest(settings.season, feature_date, "reddit", query, subreddit="LoveIslandUSA")
             for query in reddit_queries(contestants)
         )
+    if args.max_queries > 0:
+        requests = requests[: args.max_queries]
 
     if args.dry_run:
         for request in requests:
@@ -57,10 +61,14 @@ def main() -> None:
 
     raw_posts: list[dict] = []
     for request in requests:
-        if request.source == "twitter":
-            raw_posts.extend(collect_twitter(request, settings.agent_reach_timeout_seconds))
-        else:
-            raw_posts.extend(collect_reddit(request, settings.agent_reach_timeout_seconds))
+        print(f"Collecting {request.source}: {request.query}", flush=True)
+        try:
+            if request.source == "twitter":
+                raw_posts.extend(collect_twitter(request, settings.agent_reach_timeout_seconds))
+            else:
+                raw_posts.extend(collect_reddit(request, settings.agent_reach_timeout_seconds))
+        except (subprocess.CalledProcessError, subprocess.TimeoutExpired) as error:
+            print(f"Skipped {request.source} query {request.query!r}: {error}")
 
     raw_posts = dedupe_posts(filter_posts_for_date(raw_posts, feature_date))
     mentions = extract_mentions(raw_posts, contestants)
