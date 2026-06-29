@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import sqlite3
+import json
 from pathlib import Path
 from typing import Iterable, Sequence
 
@@ -157,7 +158,7 @@ def upsert_contestants(database_path: Path, season: int, contestants: Sequence[C
                     "gender": contestant.gender,
                     "entered_day": contestant.entered_day,
                     "exit_day": contestant.exit_day,
-                    "aliases_json": ",".join(contestant.aliases),
+                    "aliases_json": json.dumps(contestant.aliases),
                 }
                 for contestant in contestants
             ],
@@ -198,6 +199,20 @@ def insert_mentions(database_path: Path, rows: Iterable[dict]) -> None:
             """,
             list(rows),
         )
+
+
+def delete_mentions_for_posts(database_path: Path, raw_post_ids: Iterable[str]) -> int:
+    initialize(database_path)
+    ids = list(dict.fromkeys(raw_post_ids))
+    if not ids:
+        return 0
+    placeholders = ",".join("?" for _ in ids)
+    with connect(database_path) as connection:
+        cursor = connection.execute(
+            f"DELETE FROM contestant_mentions WHERE raw_post_id IN ({placeholders})",
+            ids,
+        )
+        return cursor.rowcount
 
 
 def replace_daily_source_metrics(database_path: Path, rows: Iterable[dict]) -> None:
@@ -278,3 +293,9 @@ def replace_predictions(database_path: Path, rows: Iterable[dict]) -> None:
             """,
             list(rows),
         )
+
+
+def fetch_all(database_path: Path, query: str, params: Sequence[object] = ()) -> list[sqlite3.Row]:
+    initialize(database_path)
+    with connect(database_path) as connection:
+        return list(connection.execute(query, params))

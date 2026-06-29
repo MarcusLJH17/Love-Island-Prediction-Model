@@ -6,6 +6,25 @@ import { datasets } from "../lib/season-data";
 import { buildPredictions, defaultSignals, makeProjection, signalLabels } from "../lib/model";
 import type { ManualEpisodeEntry, ManualTikTokEntry, SignalKey } from "../lib/types";
 
+type ExportedContestantPrediction = {
+  id: string;
+  displayName: string;
+  probability: number;
+  score: number;
+  sourceBreakdown: Partial<Record<SignalKey | "social3d" | "social7d", number | null>>;
+  sourceAvailable: Partial<Record<SignalKey, boolean>>;
+};
+
+type ExportedPredictionPayload = {
+  season: number;
+  generatedAt: string;
+  days: {
+    date: string;
+    day: number;
+    contestants: ExportedContestantPrediction[];
+  }[];
+};
+
 const chartWidth = 980;
 const chartHeight = 420;
 const leftPad = 44;
@@ -44,6 +63,7 @@ export default function Home() {
   const [cursorDay, setCursorDay] = useState(28);
   const [tiktokEntries, setTikTokEntries] = useState<ManualTikTokEntry[]>([]);
   const [episodeEntries, setEpisodeEntries] = useState<ManualEpisodeEntry[]>([]);
+  const [exportedPredictions, setExportedPredictions] = useState<ExportedPredictionPayload | null>(null);
   const chartRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -52,6 +72,13 @@ export default function Home() {
       setActiveSeason(7);
       setCursorDay(32);
     }
+  }, []);
+
+  useEffect(() => {
+    fetch("/data/processed/predictions/season8_daily.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: ExportedPredictionPayload | null) => setExportedPredictions(payload))
+      .catch(() => setExportedPredictions(null));
   }, []);
 
   const dataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
@@ -68,13 +95,22 @@ export default function Home() {
   const cursorIndex = clamp(Math.round(Math.min(selectedDay, dataset.currentDay)) - 1, 0, dataset.currentDay - 1);
   const projectionMode = activeSeason === 8 && selectedDay > dataset.currentDay;
   const fanMode = selectedDay < maxDay;
+  const exportedDay = useMemo(() => {
+    if (activeSeason !== 8 || exportedPredictions?.season !== 8) return null;
+    const roundedDay = Math.round(activeDay);
+    return exportedPredictions.days.find((item) => item.day === roundedDay) ?? null;
+  }, [activeDay, activeSeason, exportedPredictions]);
+  const exportedById = useMemo(() => {
+    return new Map((exportedDay?.contestants ?? []).map((item) => [item.id, item]));
+  }, [exportedDay]);
 
   const ranked = predictions
     .map((prediction, index) => {
       const historical = prediction.points[cursorIndex]?.probability ?? 0;
       const projection = makeProjection(prediction.points[dataset.currentDay - 1]?.probability ?? historical, projectionDays, index);
       const projectedValue = projectionMode ? projection[Math.round(selectedDay - dataset.currentDay) - 1] ?? projection[0] : historical;
-      return { ...prediction, displayProbability: projectedValue, projection };
+      const exportedValue = !projectionMode ? exportedById.get(prediction.contestant.id)?.probability : undefined;
+      return { ...prediction, displayProbability: exportedValue ?? projectedValue, projection };
     })
     .sort((a, b) => b.displayProbability - a.displayProbability);
   const activeRanked = ranked.filter((item) => isActiveAt(item.contestant, activeDay));
@@ -182,7 +218,7 @@ export default function Home() {
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
           <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
-          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : "Historical model distribution is shown in the cards."}</span>
+          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
         </div>
       </section>
 

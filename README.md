@@ -50,4 +50,49 @@ Drop preview photos into `public/islanders` using lowercase first-name filenames
 
 ## Agent-Reach Notes
 
-The ingestion scaffolding is designed to call Agent-Reach CLI tools locally after authentication. Follow Agent-Reach's project instructions for installation and account/session setup. The MVP does not bypass platform auth, rate limits, or terms.
+The ingestion scaffolding is designed to call Agent-Reach CLI tools locally after authentication. The MVP does not bypass platform auth, rate limits, or terms.
+
+### Future Agent-Reach Setup
+
+1. Install Agent-Reach using its official project instructions.
+2. Log in locally to the platforms you want to collect from, starting with Reddit and Twitter/X.
+3. Confirm the Agent-Reach commands work outside this app by running a tiny test search.
+4. Create `.env.local` from your local settings and set:
+
+```bash
+ISLANDEDGE_SEASON=8
+ISLANDEDGE_DB=data/islandedge.sqlite
+AGENT_REACH_TIMEOUT_SECONDS=60
+```
+
+5. Preview the exact daily queries before collecting:
+
+```bash
+python scripts/collect_daily.py --day 28 --date 2026-06-29 --source all --dry-run
+```
+
+6. Collect the day once the queries look right:
+
+```bash
+python scripts/collect_daily.py --day 28 --date 2026-06-29 --source all
+```
+
+7. Build model features and prediction rows:
+
+```bash
+python scripts/build_features.py --day 28 --date 2026-06-29
+```
+
+8. Export frontend-ready prediction JSON:
+
+```bash
+python scripts/export_predictions.py
+```
+
+9. Run the app and refresh the Season 8 tab:
+
+```bash
+npm run dev
+```
+
+Raw scraped posts stay in the local SQLite database only. Commit aggregate exports only when they are safe for the portfolio repo.

@@ -33,20 +33,24 @@ def run_agent_reach(command: list[str], timeout_seconds: int) -> str:
 def twitter_queries(contestants: Iterable[Contestant]) -> list[str]:
     queries: list[str] = []
     for contestant in contestants:
-        primary = contestant.display_name
-        queries.extend(
-            [
-                f'"{primary}" "Love Island"',
-                f'"{primary}" "Love Island USA"',
-                f'"{primary}" villa',
-            ]
-        )
+        for name in contestant_query_names(contestant):
+            queries.extend(
+                [
+                    f'"{name}" "Love Island"',
+                    f'"{name}" "Love Island USA"',
+                    f'"{name}" villa',
+                ]
+            )
     queries.extend(['"Love Island USA"', '"LIUSA"', '"Casa Amor" "Love Island USA"'])
     return dedupe(queries)
 
 
 def reddit_queries(contestants: Iterable[Contestant], subreddit: str = "LoveIslandUSA") -> list[str]:
-    queries = [f"subreddit:{subreddit} {contestant.display_name}" for contestant in contestants]
+    queries = [
+        f"subreddit:{subreddit} {name}"
+        for contestant in contestants
+        for name in contestant_query_names(contestant)
+    ]
     queries.extend([f"subreddit:{subreddit} recoupling", f"subreddit:{subreddit} casa", f"subreddit:{subreddit} episode"])
     return dedupe(queries)
 
@@ -117,6 +121,32 @@ def parse_timestamp(value: object, fallback_date: date) -> str:
 def stable_id(*parts: object) -> str:
     payload = "|".join(str(part) for part in parts)
     return hashlib.sha1(payload.encode("utf-8")).hexdigest()
+
+
+def posted_date(row: dict) -> date:
+    return datetime.fromisoformat(str(row["posted_at"]).replace("Z", "+00:00")).date()
+
+
+def filter_posts_for_date(rows: Iterable[dict], feature_date: date) -> list[dict]:
+    return [row for row in rows if posted_date(row) == feature_date]
+
+
+def dedupe_posts(rows: Iterable[dict]) -> list[dict]:
+    seen: set[str] = set()
+    result: list[dict] = []
+    for row in rows:
+        key = str(row["id"])
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append(row)
+    return result
+
+
+def contestant_query_names(contestant: Contestant) -> list[str]:
+    names = [contestant.display_name, contestant.full_name]
+    names.extend(alias for alias in contestant.aliases if len(alias) > 2)
+    return dedupe(name.title() if name.islower() else name for name in names)
 
 
 def dedupe(values: Iterable[str]) -> list[str]:
