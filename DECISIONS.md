@@ -17,3 +17,9 @@ Reason: the project should be public-presentable without exposing personal crede
 Manual forms count toward the day on which they are submitted. The local MVP stores entries in browser localStorage and recomputes projections immediately.
 
 Reason: this keeps daily collection fast and avoids backend complexity while the product shape is being tested.
+
+## 2026-06-29 - Season 8 seed priors
+
+Season 8 live mode includes a hand-seeded active/Casa roster and gives Bryce and Trinity stronger prior momentum.
+
+Reason: the dashboard is still using synthetic aggregate rows until Agent-Reach/social ingestion is connected, and the placeholder model should reflect obvious current-season favorites rather than imply the scraper has real live signal coverage.

@@ -3,6 +3,9 @@ export type SignalKey = "reddit" | "twitter" | "trends" | "tiktok" | "episode" |
 export type Contestant = {
   id: string;
   name: string;
+  displayName: string;
+  gender: "woman" | "man";
+  photoUrl: string;
   color: string;
   isOG: boolean;
   enteredDay: number;

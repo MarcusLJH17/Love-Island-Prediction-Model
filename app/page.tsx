@@ -1,7 +1,7 @@
 "use client";
 
 import { Activity, BarChart3, CalendarPlus, Eye, GitCompare, Save, SlidersHorizontal } from "lucide-react";
-import { FormEvent, PointerEvent, useMemo, useRef, useState } from "react";
+import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { datasets } from "../lib/season-data";
 import { buildPredictions, defaultSignals, makeProjection, signalLabels } from "../lib/model";
 import type { ManualEpisodeEntry, ManualTikTokEntry, SignalKey } from "../lib/types";
@@ -38,17 +38,25 @@ export default function Home() {
   const [episodeEntries, setEpisodeEntries] = useState<ManualEpisodeEntry[]>([]);
   const chartRef = useRef<SVGSVGElement | null>(null);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("season") === "7") {
+      setActiveSeason(7);
+      setCursorDay(32);
+    }
+  }, []);
+
   const dataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
   const predictions = useMemo(
     () => buildPredictions(dataset, signals, activeSeason === 8 ? tiktokEntries : [], activeSeason === 8 ? episodeEntries : []),
     [dataset, signals, activeSeason, tiktokEntries, episodeEntries]
   );
-  const maxDay = dataset.currentDay + projectionDays;
+  const maxDay = activeSeason === 8 ? dataset.currentDay + projectionDays : dataset.currentDay;
   const xScale = (day: number) => leftPad + ((day - 1) / (maxDay - 1)) * (chartWidth - leftPad - rightPad);
   const yScale = (value: number) => topPad + (1 - value / 0.34) * (chartHeight - topPad - bottomPad);
   const cursorX = xScale(cursorDay);
   const cursorIndex = clamp(Math.round(cursorDay) - 1, 0, dataset.currentDay - 1);
-  const projectionMode = cursorDay > dataset.currentDay;
+  const projectionMode = activeSeason === 8 && cursorDay > dataset.currentDay;
 
   const ranked = predictions
     .map((prediction, index) => {
@@ -58,17 +66,25 @@ export default function Home() {
       return { ...prediction, displayProbability: projectedValue, projection };
     })
     .sort((a, b) => b.displayProbability - a.displayProbability);
+  const topWoman = ranked.find((item) => item.contestant.gender === "woman");
+  const topMan = ranked.find((item) => item.contestant.gender === "man");
 
   function handlePointer(event: PointerEvent<SVGSVGElement>) {
     const rect = chartRef.current?.getBoundingClientRect();
     if (!rect) return;
-    const localX = event.clientX - rect.left;
+    const localX = ((event.clientX - rect.left) / rect.width) * chartWidth;
     const ratio = clamp((localX - leftPad) / (chartWidth - leftPad - rightPad), 0, 1);
     setCursorDay(Math.round(1 + ratio * (maxDay - 1)));
   }
 
   function toggleSignal(key: SignalKey) {
     setSignals((current) => ({ ...current, [key]: !current[key] }));
+  }
+
+  function selectSeason(season: 7 | 8) {
+    setActiveSeason(season);
+    setCursorDay(season === 8 ? 28 : 32);
+    window.history.replaceState(null, "", season === 8 ? "/" : "/?season=7");
   }
 
   function submitTikTok(event: FormEvent<HTMLFormElement>) {
@@ -109,17 +125,32 @@ export default function Home() {
     <main>
       <section className="topbar">
         <div>
-          <p className="eyebrow">IslandEdge</p>
-          <h1>Love Island USA forecast lab</h1>
+          <h1>IslandEdge — Forecast Workbench</h1>
+          <p className="subtitle">{activeSeason === 8 ? `Day ${dataset.currentDay} live forecast` : `Day ${cursorDay} of ${dataset.currentDay} backtest`}</p>
+        </div>
+        <div className="score-pill">
+          <span>Model mode</span>
+          <strong>{activeSeason === 8 ? "Live" : "Backtest"}</strong>
         </div>
         <div className="tabs" aria-label="Season tabs">
-          <button className={activeSeason === 8 ? "active" : ""} onClick={() => { setActiveSeason(8); setCursorDay(28); }}>
+          <button type="button" data-season-tab="8" className={activeSeason === 8 ? "active" : ""} onClick={() => selectSeason(8)} onPointerDown={() => selectSeason(8)}>
             <Activity size={16} /> Season 8 Live
           </button>
-          <button className={activeSeason === 7 ? "active" : ""} onClick={() => { setActiveSeason(7); setCursorDay(32); }}>
+          <button type="button" data-season-tab="7" className={activeSeason === 7 ? "active" : ""} onClick={() => selectSeason(7)} onPointerDown={() => selectSeason(7)}>
             <GitCompare size={16} /> Season 7 Backtest
           </button>
         </div>
+      </section>
+
+      <section className="roster-strip" aria-label={`${dataset.label} islanders`}>
+        {ranked.map((prediction) => (
+          <button className="roster-pill" key={prediction.contestant.id} title={prediction.contestant.name}>
+            <IslanderPhoto contestant={prediction.contestant} />
+            <span className="dot" style={{ background: prediction.contestant.color }} />
+            <strong>{prediction.contestant.displayName}</strong>
+            <span>{pct(prediction.displayProbability)}</span>
+          </button>
+        ))}
       </section>
 
       <section className="control-band">
@@ -134,22 +165,32 @@ export default function Home() {
         </div>
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
-          <strong>{cursorDay <= dataset.currentDay ? `Day ${cursorDay}` : `+${cursorDay - dataset.currentDay}d projection`}</strong>
-          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : "Historical model distribution is shown in the cards."}</span>
+          <strong>{projectionMode ? `+${cursorDay - dataset.currentDay}d projection` : `Day ${cursorDay}`}</strong>
+          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest cursor reads historical predictions only." : "Historical model distribution is shown in the cards."}</span>
         </div>
       </section>
 
-      <section className="chart-shell">
+      <section className="chart-shell panel">
+        <div className="chart-heading">
+          <div>
+            <p>Panel 1</p>
+            <h2>{activeSeason === 8 ? `Live forecast · day ${cursorDay}` : `Backtest · day 1 → ${cursorDay}`}</h2>
+          </div>
+          <span>{activeSeason === 8 ? "Solid = history · faint = projection fan" : "Solid = historical model value · cursor = review day"}</span>
+        </div>
         <svg
           ref={chartRef}
           viewBox={`0 0 ${chartWidth} ${chartHeight}`}
           role="img"
           aria-label="Win probability timeline"
-          onPointerDown={handlePointer}
+          onPointerDown={(event) => {
+            event.currentTarget.setPointerCapture(event.pointerId);
+            handlePointer(event);
+          }}
           onPointerMove={(event) => event.buttons === 1 && handlePointer(event)}
         >
           <rect x={leftPad} y={topPad} width={xScale(dataset.currentDay) - leftPad} height={chartHeight - topPad - bottomPad} className="history-zone" />
-          <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />
+          {activeSeason === 8 && <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />}
           {[0.1, 0.2, 0.3].map((value) => (
             <g key={value}>
               <line x1={leftPad} x2={chartWidth - rightPad} y1={yScale(value)} y2={yScale(value)} className="grid" />
@@ -164,30 +205,36 @@ export default function Home() {
             return (
               <g key={prediction.contestant.id}>
                 <polyline points={historyPath} fill="none" stroke={prediction.contestant.color} strokeWidth="2.6" strokeLinecap="round" />
-                <polyline points={`${coord(xScale(dataset.currentDay))},${coord(yScale(last))} ${projectionPath}`} fill="none" stroke={prediction.contestant.color} strokeWidth="1.4" strokeOpacity="0.22" />
+                {activeSeason === 8 && <polyline points={`${coord(xScale(dataset.currentDay))},${coord(yScale(last))} ${projectionPath}`} fill="none" stroke={prediction.contestant.color} strokeWidth="1.4" strokeOpacity="0.22" />}
               </g>
             );
           })}
-          <line x1={xScale(dataset.currentDay)} x2={xScale(dataset.currentDay)} y1={topPad} y2={chartHeight - bottomPad} className="today-line" />
+          {activeSeason === 8 && <line x1={xScale(dataset.currentDay)} x2={xScale(dataset.currentDay)} y1={topPad} y2={chartHeight - bottomPad} className="today-line" />}
           <line x1={cursorX} x2={cursorX} y1={topPad - 10} y2={chartHeight - bottomPad + 10} className="cursor-line" />
           <text x={clamp(cursorX - 42, leftPad, chartWidth - 150)} y={topPad - 14} className="cursor-label">
-            {cursorDay <= dataset.currentDay ? `Day ${cursorDay}` : `+${cursorDay - dataset.currentDay}d projection`}
+            {projectionMode ? `+${cursorDay - dataset.currentDay}d projection` : `Day ${cursorDay}`}
           </text>
           <text x={leftPad} y={chartHeight - 10} className="axis">Day 1</text>
-          <text x={xScale(dataset.currentDay) - 32} y={chartHeight - 10} className="axis">Today</text>
-          <text x={chartWidth - 116} y={chartHeight - 10} className="axis">Projection</text>
+          {activeSeason === 8 ? (
+            <>
+              <text x={xScale(dataset.currentDay) - 32} y={chartHeight - 10} className="axis">Today</text>
+              <text x={chartWidth - 116} y={chartHeight - 10} className="axis">Projection</text>
+            </>
+          ) : (
+            <text x={chartWidth - 112} y={chartHeight - 10} className="axis">Finale</text>
+          )}
         </svg>
       </section>
 
       <section className="cards">
-        {ranked.slice(0, 8).map((prediction) => {
+        {ranked.map((prediction) => {
           const low = Math.max(0, prediction.displayProbability - Math.sqrt(Math.max(1, cursorDay - dataset.currentDay)) * 0.018);
           const high = Math.min(0.7, prediction.displayProbability + Math.sqrt(Math.max(1, cursorDay - dataset.currentDay)) * 0.018);
           return (
             <article className="contestant-card" key={prediction.contestant.id}>
-              <div className="swatch" style={{ background: prediction.contestant.color }} />
+              <IslanderPhoto contestant={prediction.contestant} />
               <div>
-                <h2>{prediction.contestant.name}</h2>
+                <h2>{prediction.contestant.displayName}</h2>
                 <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
               </div>
               <strong>{pct(prediction.displayProbability)}</strong>
@@ -227,11 +274,11 @@ export default function Home() {
           <p>The Season 7 seeded backtest ranks the known winners and finalists against the same interpretable feature model used by the live tab.</p>
           <div className="result-row">
             <span>Known winners</span>
-            <strong>Amaya Espinal / Bryan Arenales</strong>
+            <strong>Amaya / Bryan</strong>
           </div>
           <div className="result-row">
-            <span>Top forecast at finale cursor</span>
-            <strong>{ranked.slice(0, 2).map((item) => item.contestant.name).join(" / ")}</strong>
+            <span>Top forecast at cursor</span>
+            <strong>{[topWoman?.contestant.displayName, topMan?.contestant.displayName].filter(Boolean).join(" / ")}</strong>
           </div>
         </section>
       )}
@@ -239,12 +286,33 @@ export default function Home() {
   );
 }
 
-function SelectContestant({ contestants }: { contestants: { id: string; name: string }[] }) {
+function IslanderPhoto({ contestant }: { contestant: { displayName: string; photoUrl: string } }) {
+  const [loaded, setLoaded] = useState(false);
+
+  return (
+    <span className="photo">
+      <span aria-hidden="true">{contestant.displayName.slice(0, 1)}</span>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={contestant.photoUrl}
+        alt=""
+        style={{ opacity: loaded ? 1 : 0 }}
+        onLoad={() => setLoaded(true)}
+        onError={(event) => {
+          setLoaded(false);
+          event.currentTarget.style.display = "none";
+        }}
+      />
+    </span>
+  );
+}
+
+function SelectContestant({ contestants }: { contestants: { id: string; name: string; displayName: string }[] }) {
   return (
     <label>
       Contestant
       <select name="contestantId" required defaultValue={contestants[0]?.id}>
-        {contestants.map((contestant) => <option value={contestant.id} key={contestant.id}>{contestant.name}</option>)}
+        {contestants.map((contestant) => <option value={contestant.id} key={contestant.id}>{contestant.displayName}</option>)}
       </select>
     </label>
   );

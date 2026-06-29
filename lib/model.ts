@@ -76,7 +76,7 @@ function featureScore(point: FeaturePoint, signals: Record<SignalKey, boolean>, 
 }
 
 function normalizeDay(predictions: ContestantPrediction[], pointIndex: number) {
-  const raw = predictions.map((prediction) => Math.max(0.01, prediction.points[pointIndex]?.probability ?? 0.01));
+  const raw = predictions.map((prediction) => Math.exp((prediction.points[pointIndex]?.score ?? -1) * 2.8));
   const total = raw.reduce((sum, value) => sum + value, 0);
   predictions.forEach((prediction, index) => {
     if (prediction.points[pointIndex]) {

@@ -1,26 +1,57 @@
 import type { SeasonDataset } from "./types";
 
 const palette = [
-  "#D85A30",
-  "#2B8C83",
-  "#E8B342",
-  "#6D5BD0",
-  "#D94D8C",
-  "#1F7ACB",
-  "#7B8E3E",
-  "#C3532F",
-  "#4062BB",
-  "#8D5A97",
-  "#008F7A",
-  "#B54E62",
-  "#4B6C8C",
-  "#CF7D1C",
-  "#5B7F57",
-  "#9B5DE5"
+  "#ff5c93",
+  "#ffa600",
+  "#9b7bff",
+  "#26c6da",
+  "#66d9c7",
+  "#ff6f91",
+  "#ffd000",
+  "#54a0ff",
+  "#f368e0",
+  "#00d2d3",
+  "#ff9f43",
+  "#10ac84",
+  "#ee5253",
+  "#5f27cd",
+  "#48dbfb",
+  "#1dd1a1",
+  "#feca57",
+  "#ff6b6b",
+  "#c8d6e5",
+  "#576574",
+  "#ff9ff3",
+  "#7bed9f",
+  "#70a1ff",
+  "#ff7f50"
 ];
 
-function contestant(id: string, name: string, index: number, enteredDay = 1, status: SeasonDataset["contestants"][number]["status"] = "active") {
-  return { id, name, color: palette[index % palette.length], isOG: enteredDay === 1, enteredDay, status };
+function photo(fileName: string) {
+  return `https://loveisland.fandom.com/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}`;
+}
+
+function contestant(
+  id: string,
+  name: string,
+  displayName: string,
+  gender: "woman" | "man",
+  index: number,
+  enteredDay = 1,
+  status: SeasonDataset["contestants"][number]["status"] = "active",
+  photoFile = `USA_S8_${name.replaceAll(" ", "_")}.jpg`
+) {
+  return {
+    id,
+    name,
+    displayName,
+    gender,
+    photoUrl: photo(photoFile),
+    color: palette[index % palette.length],
+    isOG: enteredDay === 1,
+    enteredDay,
+    status
+  };
 }
 
 function wave(day: number, seed: number, tilt = 0) {
@@ -37,9 +68,9 @@ function points(days: number, seed: number, boosts: Partial<Record<number, numbe
       reddit: base + wave(day, seed + 5) * 0.25,
       twitter: base * 0.7 + wave(day, seed + 11) * 0.28,
       trends: Math.max(0, Math.min(100, 48 + base * 30 + eventBoost * 18)),
-      tiktok: base * 0.8 + wave(day, seed + 17) * 0.2,
-      episode: base * 0.45 + eventBoost * 0.55,
-      personal: base * 0.35 + eventBoost * 0.5,
+      tiktok: base * 0.8 + wave(day, seed + 17) * 0.2 + eventBoost * 0.2,
+      episode: base * 0.45 + eventBoost * 0.65,
+      personal: base * 0.35 + eventBoost * 0.55,
       coupleStatus: base + eventBoost > -0.35 ? 1 : 0,
       editVolume: Math.max(1, Math.min(5, Math.round(3 + base * 1.5 + eventBoost)))
     };
@@ -53,22 +84,35 @@ export const season8: SeasonDataset = {
   finalDate: "2026-07-12",
   currentDay: 28,
   contestants: [
-    contestant("s8-aniya", "Aniya Harvey", 0),
-    contestant("s8-kenzie", "Kenzie Annis", 1),
-    contestant("s8-bryce", "Bryce Dettloff", 2),
-    contestant("s8-kc", "KC Chandler", 3),
-    contestant("s8-kayda", "Kayda", 4),
-    contestant("s8-zach", "Zach", 5),
-    contestant("s8-trinity", "Trinity", 6),
-    contestant("s8-melanie", "Melanie", 7),
-    contestant("s8-sincere", "Sincere", 8),
-    contestant("s8-corbin", "Corbin", 9),
-    contestant("s8-caleb", "Caleb", 10),
-    contestant("s8-jennifer", "Jennifer", 11),
-    contestant("s8-amora", "Amora Cachee", 12, 20),
-    contestant("s8-alannah", "Alannah Keyser", 13, 20),
-    contestant("s8-jaiden", "Jaiden Bacciocco", 14, 20),
-    contestant("s8-tierra", "Tierra Davis", 15, 20)
+    contestant("s8-aniya", "Aniya Harvey", "Aniya", "woman", 0),
+    contestant("s8-kenzie", "Kenzie Annis", "Kenzie", "woman", 1),
+    contestant("s8-bryce", "Bryce Dettloff", "Bryce", "man", 2),
+    contestant("s8-kc", "KC Chandler", "KC", "man", 3),
+    contestant("s8-kayda", "Kayda Bosse", "Kayda", "woman", 4),
+    contestant("s8-zach", "Zach Georgiou", "Zach", "man", 5),
+    contestant("s8-trinity", "Trinity Tatum", "Trinity", "woman", 6),
+    contestant("s8-melanie", "Melanie Moreno", "Melanie", "woman", 7),
+    contestant("s8-sincere", "Sincere Rhea", "Sincere", "man", 8),
+    contestant("s8-corbin", "Corbin Mims", "Corbin", "man", 9),
+    contestant("s8-caleb", "Caleb McDaniel", "Caleb", "man", 10),
+    contestant("s8-jen", "Jen Terry", "Jen", "woman", 11),
+    contestant("s8-amora", "Amora Cachee", "Amora", "woman", 12, 20),
+    contestant("s8-jaiden", "Jaiden Bacciocco", "Jaiden", "woman", 13, 20),
+    contestant("s8-parmida", "Parmida", "Parmida", "woman", 14, 20),
+    contestant("s8-sydney", "Sydney Eugene", "Sydney", "woman", 15, 20),
+    contestant("s8-tierra", "Tierra Davis", "Tierra", "woman", 16, 20),
+    contestant("s8-carl", "Carl Lee Schmidt", "Carl", "man", 17, 24),
+    contestant("s8-chandlar", "Chandlar Wilson", "Chandlar", "man", 18, 24),
+    contestant("s8-chay", "Chay Nehra", "Chay", "man", 19, 24),
+    contestant("s8-corey", "Corey Sawyer Jr.", "Corey", "man", 20, 24),
+    contestant("s8-dylan", "Dylan Wrona", "Dylan", "man", 21, 24),
+    contestant("s8-gal", "Gal Tshnieder", "Gal", "man", 22, 24),
+    contestant("s8-keyon", "Keyon Harry", "Keyon", "man", 23, 24),
+    contestant("s8-kyle", "Kyle Greene", "Kyle", "man", 24, 24),
+    contestant("s8-ronnie", "Ronnie Gunter", "Ronnie", "man", 25, 24),
+    contestant("s8-ryan", "Ryan Ten Hulscher", "Ryan", "man", 26, 24),
+    contestant("s8-tino", "Tino Ellis", "Tino", "man", 27, 24),
+    contestant("s8-trae", "Trae Taylor", "Trae", "man", 28, 24)
   ],
   series: []
 };
@@ -79,7 +123,9 @@ season8.series = season8.contestants.map((c, index) => ({
     7: index % 3 === 0 ? 0.35 : 0,
     14: index % 4 === 1 ? 0.42 : -0.08,
     21: index % 5 === 2 ? 0.5 : 0,
-    26: c.id === "s8-aniya" || c.id === "s8-kenzie" ? 0.65 : 0
+    24: c.id === "s8-bryce" || c.id === "s8-trinity" ? 0.85 : 0,
+    26: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.15 : c.id === "s8-kenzie" ? 0.32 : 0,
+    28: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.25 : 0
   })
 }));
 
@@ -90,16 +136,16 @@ export const season7: SeasonDataset = {
   finalDate: "2025-07-13",
   currentDay: 32,
   contestants: [
-    contestant("s7-amaya", "Amaya Espinal", 0, 5, "winner"),
-    contestant("s7-bryan", "Bryan Arenales", 1, 10, "winner"),
-    contestant("s7-oclandria", "Olandria Carthen", 2, 1, "runner-up"),
-    contestant("s7-nic", "Nic Vansteenberghe", 3, 1, "runner-up"),
-    contestant("s7-huda", "Huda Mustafa", 4, 1, "runner-up"),
-    contestant("s7-chris", "Chris Seeley", 5, 12, "runner-up"),
-    contestant("s7-chelley", "Chelley Bissainthe", 6, 1, "runner-up"),
-    contestant("s7-ace", "Ace Greene", 7, 1, "runner-up"),
-    contestant("s7-taylor", "Taylor Williams", 8, 1, "dumped"),
-    contestant("s7-cierra", "Cierra Ortega", 9, 1, "dumped")
+    contestant("s7-amaya", "Amaya Espinal", "Amaya", "woman", 0, 5, "winner", "USA_S7_Amaya_Espinal.jpg"),
+    contestant("s7-bryan", "Bryan Arenales", "Bryan", "man", 1, 10, "winner", "USA_S7_Bryan_Arenales.jpg"),
+    contestant("s7-oclandria", "Olandria Carthen", "Olandria", "woman", 2, 1, "runner-up", "USA_S7_Olandria_Carthen.jpg"),
+    contestant("s7-nic", "Nic Vansteenberghe", "Nic", "man", 3, 1, "runner-up", "USA_S7_Nic_Vansteenberghe.jpg"),
+    contestant("s7-huda", "Huda Mustafa", "Huda", "woman", 4, 1, "runner-up", "USA_S7_Huda_Mustafa.jpg"),
+    contestant("s7-chris", "Chris Seeley", "Chris", "man", 5, 12, "runner-up", "USA_S7_Chris_Seeley.jpg"),
+    contestant("s7-chelley", "Chelley Bissainthe", "Chelley", "woman", 6, 1, "runner-up", "USA_S7_Chelley_Bissainthe.jpg"),
+    contestant("s7-ace", "Ace Greene", "Ace", "man", 7, 1, "runner-up", "USA_S7_Ace_Greene.jpg"),
+    contestant("s7-taylor", "Taylor Williams", "Taylor", "man", 8, 1, "dumped", "USA_S7_Taylor_Williams.jpg"),
+    contestant("s7-cierra", "Cierra Ortega", "Cierra", "woman", 9, 1, "dumped", "USA_S7_Cierra_Ortega.jpg")
   ],
   series: [],
   outcomes: {
@@ -110,15 +156,17 @@ export const season7: SeasonDataset = {
 };
 
 season7.series = season7.contestants.map((c, index) => {
-  const winnerTilt = season7.outcomes?.winners.includes(c.id) ? 0.35 : 0;
-  const dumpedTilt = season7.outcomes?.dumped.includes(c.id) ? -0.35 : 0;
+  const winnerTilt = season7.outcomes?.winners.includes(c.id) ? 1.65 : 0;
+  const finalistTilt = season7.outcomes?.finalists.includes(c.id) ? 0.22 : 0;
+  const dumpedTilt = season7.outcomes?.dumped.includes(c.id) ? -0.65 : 0;
   return {
     contestantId: c.id,
     points: points(season7.currentDay, index * 5 + 2, {
-      9: winnerTilt,
-      17: winnerTilt * 1.4 + dumpedTilt,
-      25: winnerTilt * 1.8 + dumpedTilt * 1.2,
-      31: winnerTilt * 2.2 + dumpedTilt * 1.5
+      9: winnerTilt * 0.35 + finalistTilt,
+      17: winnerTilt * 0.7 + finalistTilt + dumpedTilt,
+      25: winnerTilt * 1.0 + finalistTilt + dumpedTilt * 1.2,
+      31: winnerTilt * 1.2 + finalistTilt + dumpedTilt * 1.5,
+      32: winnerTilt * 1.4 + finalistTilt + dumpedTilt * 1.8
     })
   };
 });
