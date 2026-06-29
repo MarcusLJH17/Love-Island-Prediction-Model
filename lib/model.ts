@@ -1,4 +1,5 @@
 import type {
+  Contestant,
   ContestantPrediction,
   FeaturePoint,
   ManualEpisodeEntry,
@@ -85,6 +86,41 @@ function normalizeDay(predictions: ContestantPrediction[], pointIndex: number) {
   });
 }
 
+function clamp(value: number, min: number, max: number) {
+  return Math.max(min, Math.min(max, value));
+}
+
+function recentSlope(points: { probability: number }[], cursorIndex: number, lookback = 4) {
+  const end = points[cursorIndex]?.probability ?? 0;
+  const startIndex = Math.max(0, cursorIndex - lookback);
+  const start = points[startIndex]?.probability ?? end;
+  const days = Math.max(1, cursorIndex - startIndex);
+  return (end - start) / days;
+}
+
+function volatility(points: { probability: number }[], cursorIndex: number, lookback = 6) {
+  const startIndex = Math.max(0, cursorIndex - lookback + 1);
+  const values = points.slice(startIndex, cursorIndex + 1).map((point) => point.probability);
+  if (values.length < 2) return 0.008;
+  const deltas = values.slice(1).map((value, index) => Math.abs(value - values[index]));
+  return clamp(deltas.reduce((sum, value) => sum + value, 0) / deltas.length, 0.004, 0.035);
+}
+
+function currentFeaturePressure(point: FeaturePoint | undefined) {
+  if (!point) return 0;
+  const trendPressure = normalizeTrend(point.trends) * 0.012;
+  const socialPressure = (point.reddit * 0.009) + (point.twitter * 0.007) + (point.tiktok * 0.006);
+  const episodePressure = (point.episode * 0.009) + (point.personal * 0.006) + (point.coupleStatus ? 0.004 : -0.006);
+  return clamp(trendPressure + socialPressure + episodePressure, -0.025, 0.03);
+}
+
+function contestantRisk(contestant: Contestant, cursorDay: number) {
+  if (contestant.exitDay != null && contestant.exitDay <= cursorDay) return -0.08;
+  const newcomerDrag = Math.max(0, 5 - (cursorDay - contestant.enteredDay)) * -0.0025;
+  const ogStability = contestant.isOG ? 0.004 : 0;
+  return newcomerDrag + ogStability;
+}
+
 export function buildPredictions(
   dataset: SeasonDataset,
   signals: Record<SignalKey, boolean>,
@@ -116,11 +152,29 @@ export function buildPredictions(
   return predictions;
 }
 
-export function makeProjection(lastProbability: number, days: number, seed: number) {
+export function makeProjection(
+  prediction: ContestantPrediction,
+  cursorIndex: number,
+  days: number,
+  options: { cursorDay: number; season: 7 | 8 }
+) {
+  const base = prediction.points[cursorIndex]?.probability ?? 0;
+  const slope = recentSlope(prediction.points, cursorIndex);
+  const movement = volatility(prediction.points, cursorIndex);
+  const pressure = currentFeaturePressure(prediction.points[cursorIndex]);
+  const risk = contestantRisk(prediction.contestant, options.cursorDay);
+  const finalePull = options.season === 8 ? 0.035 : 0.015;
+  let value = base;
+
   return Array.from({ length: days }, (_, idx) => {
     const day = idx + 1;
-    const uncertainty = Math.sqrt(day) * 0.018;
-    const drift = Math.sin((seed + day) * 1.7) * uncertainty;
-    return Math.max(0.002, Math.min(0.7, lastProbability + drift));
+    const momentumDecay = Math.pow(0.78, day - 1);
+    const momentum = slope * 0.9 * momentumDecay;
+    const signalCarry = pressure * Math.pow(0.86, day - 1);
+    const regression = (0.035 - value) * 0.035;
+    const favoriteDurability = base > 0.1 ? finalePull * 0.012 : 0;
+    const deterministicShock = Math.sin((prediction.contestant.id.length + day) * 1.31) * movement * 0.22;
+    value = clamp(value + momentum + signalCarry + regression + risk + favoriteDurability + deterministicShock, 0.002, 0.7);
+    return value;
   });
 }

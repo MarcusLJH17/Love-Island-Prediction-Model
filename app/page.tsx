@@ -107,7 +107,7 @@ export default function Home() {
   const ranked = predictions
     .map((prediction, index) => {
       const historical = prediction.points[cursorIndex]?.probability ?? 0;
-      const projection = makeProjection(prediction.points[dataset.currentDay - 1]?.probability ?? historical, projectionDays, index);
+      const projection = makeProjection(prediction, cursorIndex, projectionDays, { cursorDay: activeDay, season: activeSeason });
       const projectedValue = projectionMode ? projection[Math.round(selectedDay - dataset.currentDay) - 1] ?? projection[0] : historical;
       const exportedValue = !projectionMode ? exportedById.get(prediction.contestant.id)?.probability : undefined;
       return { ...prediction, displayProbability: exportedValue ?? projectedValue, projection };
@@ -218,7 +218,7 @@ export default function Home() {
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
           <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
-          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
+          <span>{projectionMode ? "Momentum projection carries recent slope, signal pressure, and risk forward." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
         </div>
       </section>
 
@@ -228,7 +228,7 @@ export default function Home() {
             <p>Panel 1</p>
             <h2>{activeSeason === 8 ? `Live forecast - ${dayLabel(selectedDay).toLowerCase()}` : `Backtest - day 1 to ${selectedDay.toFixed(1)}`}</h2>
           </div>
-          <span>{activeSeason === 8 ? "Solid = history - faint = cursor simulation" : "Solid = historical model value - faint = cursor simulation"}</span>
+          <span>{activeSeason === 8 ? "Solid = history - dashed = momentum projection" : "Solid = historical model value - dashed = cursor projection"}</span>
         </div>
         <svg
           ref={chartRef}
@@ -254,7 +254,7 @@ export default function Home() {
             const historyPath = visibleHistory.map((point) => `${coord(xScale(point.day))},${coord(yScale(point.probability))}`).join(" ");
             const base = prediction.points[cursorIndex]?.probability ?? 0;
             const fanLength = Math.max(0, Math.ceil(maxDay - selectedDay));
-            const projection = makeProjection(base, fanLength, index);
+            const projection = makeProjection(prediction, cursorIndex, fanLength, { cursorDay: activeDay, season: activeSeason });
             const projectionPath = projection.map((value, pIndex) => {
               const fanDay = selectedDay + ((pIndex + 1) / Math.max(1, fanLength)) * (maxDay - selectedDay);
               return `${coord(xScale(fanDay))},${coord(yScale(value))}`;
@@ -303,8 +303,8 @@ export default function Home() {
       <section className="cards">
         {activeRanked.map((prediction) => {
           const fanDays = Math.max(1, maxDay - selectedDay);
-          const low = Math.max(0, prediction.displayProbability - Math.sqrt(fanDays) * 0.018);
-          const high = Math.min(0.7, prediction.displayProbability + Math.sqrt(fanDays) * 0.018);
+          const projectedEnd = prediction.projection[Math.max(0, Math.ceil(fanDays) - 1)] ?? prediction.displayProbability;
+          const movement = projectedEnd - prediction.displayProbability;
           return (
             <article className="contestant-card" key={prediction.contestant.id}>
               <IslanderPhoto contestant={prediction.contestant} />
@@ -313,7 +313,7 @@ export default function Home() {
                 <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
               </div>
               <strong>{pct(prediction.displayProbability)}</strong>
-              {fanMode && <span>{pct(low)} to {pct(high)}</span>}
+              {fanMode && <span>{movement >= 0 ? "+" : ""}{pct(movement)} projected</span>}
             </article>
           );
         })}
