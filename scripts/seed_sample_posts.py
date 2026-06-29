@@ -1,6 +1,10 @@
 from __future__ import annotations
 
+import sys
 from datetime import date
+from pathlib import Path
+
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from islandedge.config import load_settings
 from islandedge.contestants import contestants_for_season
