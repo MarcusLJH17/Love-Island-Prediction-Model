@@ -9,6 +9,7 @@ export type Contestant = {
   color: string;
   isOG: boolean;
   enteredDay: number;
+  exitDay?: number;
   status: "active" | "dumped" | "winner" | "runner-up";
 };
 

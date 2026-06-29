@@ -9,6 +9,7 @@ The MVP is intentionally transparent: it starts with an interpretable weighted s
 - Current-season dashboard for Love Island USA Season 8.
 - Historical backtest tab for Season 7.
 - Draggable timeline cursor that drives contestant cards.
+- Smooth scrubber control under the chart for finer cursor movement.
 - Monte Carlo-style projection fan after the cursor.
 - Source toggles for Reddit, Twitter/X, Google Trends, TikTok, episode data, and personal notes.
 - Two local forms:
@@ -42,6 +43,10 @@ The public repo should store aggregate feature rows and model outputs only. Do n
 - Twitter/X or Reddit cookies.
 - API keys.
 - Personal session data.
+
+## Islander Images
+
+Drop preview photos into `public/islanders` using lowercase first-name filenames such as `bryce.jpg` or `trinity.jpg`. Missing images fall back to initial avatars.
 
 ## Agent-Reach Notes
 

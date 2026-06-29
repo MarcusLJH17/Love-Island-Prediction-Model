@@ -30,6 +30,14 @@ function coord(value: number) {
   return Number(value.toFixed(3));
 }
 
+function dayLabel(day: number) {
+  return Number.isInteger(day) ? `Day ${day}` : `Day ${day.toFixed(1)}`;
+}
+
+function isActiveAt(contestant: { enteredDay: number; exitDay?: number }, day: number) {
+  return contestant.enteredDay <= day && (contestant.exitDay == null || contestant.exitDay >= day);
+}
+
 export default function Home() {
   const [activeSeason, setActiveSeason] = useState<7 | 8>(8);
   const [signals, setSignals] = useState(defaultSignals);
@@ -52,22 +60,26 @@ export default function Home() {
     [dataset, signals, activeSeason, tiktokEntries, episodeEntries]
   );
   const maxDay = activeSeason === 8 ? dataset.currentDay + projectionDays : dataset.currentDay;
+  const selectedDay = clamp(cursorDay, 1, maxDay);
+  const activeDay = Math.max(1, Math.floor(Math.min(selectedDay, dataset.currentDay)));
   const xScale = (day: number) => leftPad + ((day - 1) / (maxDay - 1)) * (chartWidth - leftPad - rightPad);
-  const yScale = (value: number) => topPad + (1 - value / 0.34) * (chartHeight - topPad - bottomPad);
-  const cursorX = xScale(cursorDay);
-  const cursorIndex = clamp(Math.round(cursorDay) - 1, 0, dataset.currentDay - 1);
-  const projectionMode = activeSeason === 8 && cursorDay > dataset.currentDay;
+  const yScale = (value: number) => topPad + (1 - value / 0.5) * (chartHeight - topPad - bottomPad);
+  const cursorX = xScale(selectedDay);
+  const cursorIndex = clamp(Math.round(Math.min(selectedDay, dataset.currentDay)) - 1, 0, dataset.currentDay - 1);
+  const projectionMode = activeSeason === 8 && selectedDay > dataset.currentDay;
+  const fanMode = selectedDay < maxDay;
 
   const ranked = predictions
     .map((prediction, index) => {
       const historical = prediction.points[cursorIndex]?.probability ?? 0;
       const projection = makeProjection(prediction.points[dataset.currentDay - 1]?.probability ?? historical, projectionDays, index);
-      const projectedValue = projectionMode ? projection[Math.round(cursorDay - dataset.currentDay) - 1] ?? projection[0] : historical;
+      const projectedValue = projectionMode ? projection[Math.round(selectedDay - dataset.currentDay) - 1] ?? projection[0] : historical;
       return { ...prediction, displayProbability: projectedValue, projection };
     })
     .sort((a, b) => b.displayProbability - a.displayProbability);
-  const topWoman = ranked.find((item) => item.contestant.gender === "woman");
-  const topMan = ranked.find((item) => item.contestant.gender === "man");
+  const activeRanked = ranked.filter((item) => isActiveAt(item.contestant, activeDay));
+  const topWoman = activeRanked.find((item) => item.contestant.gender === "woman");
+  const topMan = activeRanked.find((item) => item.contestant.gender === "man");
 
   function handlePointer(event: PointerEvent<SVGSVGElement>) {
     const rect = chartRef.current?.getBoundingClientRect();
@@ -75,6 +87,10 @@ export default function Home() {
     const localX = ((event.clientX - rect.left) / rect.width) * chartWidth;
     const ratio = clamp((localX - leftPad) / (chartWidth - leftPad - rightPad), 0, 1);
     setCursorDay(Math.round(1 + ratio * (maxDay - 1)));
+  }
+
+  function handleScrub(value: string) {
+    setCursorDay(Number(value));
   }
 
   function toggleSignal(key: SignalKey) {
@@ -125,8 +141,8 @@ export default function Home() {
     <main>
       <section className="topbar">
         <div>
-          <h1>IslandEdge — Forecast Workbench</h1>
-          <p className="subtitle">{activeSeason === 8 ? `Day ${dataset.currentDay} live forecast` : `Day ${cursorDay} of ${dataset.currentDay} backtest`}</p>
+          <h1>IslandEdge - Forecast Workbench</h1>
+          <p className="subtitle">{activeSeason === 8 ? `Day ${dataset.currentDay} live forecast` : `${dayLabel(selectedDay)} of ${dataset.currentDay} backtest`}</p>
         </div>
         <div className="score-pill">
           <span>Model mode</span>
@@ -143,7 +159,7 @@ export default function Home() {
       </section>
 
       <section className="roster-strip" aria-label={`${dataset.label} islanders`}>
-        {ranked.map((prediction) => (
+        {activeRanked.map((prediction) => (
           <button className="roster-pill" key={prediction.contestant.id} title={prediction.contestant.name}>
             <IslanderPhoto contestant={prediction.contestant} />
             <span className="dot" style={{ background: prediction.contestant.color }} />
@@ -165,8 +181,8 @@ export default function Home() {
         </div>
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
-          <strong>{projectionMode ? `+${cursorDay - dataset.currentDay}d projection` : `Day ${cursorDay}`}</strong>
-          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest cursor reads historical predictions only." : "Historical model distribution is shown in the cards."}</span>
+          <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
+          <span>{projectionMode ? "Monte Carlo fan values are shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : "Historical model distribution is shown in the cards."}</span>
         </div>
       </section>
 
@@ -174,9 +190,9 @@ export default function Home() {
         <div className="chart-heading">
           <div>
             <p>Panel 1</p>
-            <h2>{activeSeason === 8 ? `Live forecast · day ${cursorDay}` : `Backtest · day 1 → ${cursorDay}`}</h2>
+            <h2>{activeSeason === 8 ? `Live forecast - ${dayLabel(selectedDay).toLowerCase()}` : `Backtest - day 1 to ${selectedDay.toFixed(1)}`}</h2>
           </div>
-          <span>{activeSeason === 8 ? "Solid = history · faint = projection fan" : "Solid = historical model value · cursor = review day"}</span>
+          <span>{activeSeason === 8 ? "Solid = history - faint = cursor simulation" : "Solid = historical model value - faint = cursor simulation"}</span>
         </div>
         <svg
           ref={chartRef}
@@ -191,28 +207,33 @@ export default function Home() {
         >
           <rect x={leftPad} y={topPad} width={xScale(dataset.currentDay) - leftPad} height={chartHeight - topPad - bottomPad} className="history-zone" />
           {activeSeason === 8 && <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />}
-          {[0.1, 0.2, 0.3].map((value) => (
+          {[0.1, 0.2, 0.3, 0.4].map((value) => (
             <g key={value}>
               <line x1={leftPad} x2={chartWidth - rightPad} y1={yScale(value)} y2={yScale(value)} className="grid" />
               <text x={8} y={yScale(value) + 4} className="axis">{pct(value)}</text>
             </g>
           ))}
-          {predictions.map((prediction, index) => {
-            const historyPath = prediction.points.map((point) => `${coord(xScale(point.day))},${coord(yScale(point.probability))}`).join(" ");
-            const last = prediction.points[dataset.currentDay - 1]?.probability ?? 0;
-            const projection = makeProjection(last, projectionDays, index);
-            const projectionPath = projection.map((value, pIndex) => `${coord(xScale(dataset.currentDay + pIndex + 1))},${coord(yScale(value))}`).join(" ");
+          {activeRanked.map((prediction, index) => {
+            const visibleHistory = prediction.points.filter((point) => point.day >= prediction.contestant.enteredDay && point.day <= Math.min(dataset.currentDay, maxDay));
+            const historyPath = visibleHistory.map((point) => `${coord(xScale(point.day))},${coord(yScale(point.probability))}`).join(" ");
+            const base = prediction.points[cursorIndex]?.probability ?? 0;
+            const fanLength = Math.max(0, Math.ceil(maxDay - selectedDay));
+            const projection = makeProjection(base, fanLength, index);
+            const projectionPath = projection.map((value, pIndex) => {
+              const fanDay = selectedDay + ((pIndex + 1) / Math.max(1, fanLength)) * (maxDay - selectedDay);
+              return `${coord(xScale(fanDay))},${coord(yScale(value))}`;
+            }).join(" ");
             return (
               <g key={prediction.contestant.id}>
                 <polyline points={historyPath} fill="none" stroke={prediction.contestant.color} strokeWidth="2.6" strokeLinecap="round" />
-                {activeSeason === 8 && <polyline points={`${coord(xScale(dataset.currentDay))},${coord(yScale(last))} ${projectionPath}`} fill="none" stroke={prediction.contestant.color} strokeWidth="1.4" strokeOpacity="0.22" />}
+                {fanMode && projectionPath && <polyline points={`${coord(cursorX)},${coord(yScale(base))} ${projectionPath}`} fill="none" stroke={prediction.contestant.color} strokeWidth="1.4" strokeOpacity="0.22" strokeDasharray="4 5" />}
               </g>
             );
           })}
           {activeSeason === 8 && <line x1={xScale(dataset.currentDay)} x2={xScale(dataset.currentDay)} y1={topPad} y2={chartHeight - bottomPad} className="today-line" />}
           <line x1={cursorX} x2={cursorX} y1={topPad - 10} y2={chartHeight - bottomPad + 10} className="cursor-line" />
           <text x={clamp(cursorX - 42, leftPad, chartWidth - 150)} y={topPad - 14} className="cursor-label">
-            {projectionMode ? `+${cursorDay - dataset.currentDay}d projection` : `Day ${cursorDay}`}
+            {projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}
           </text>
           <text x={leftPad} y={chartHeight - 10} className="axis">Day 1</text>
           {activeSeason === 8 ? (
@@ -224,12 +245,30 @@ export default function Home() {
             <text x={chartWidth - 112} y={chartHeight - 10} className="axis">Finale</text>
           )}
         </svg>
+        <div className="scrubber">
+          <input
+            aria-label="Timeline cursor"
+            type="range"
+            min="1"
+            max={maxDay}
+            step="0.1"
+            value={selectedDay}
+            onInput={(event) => handleScrub(event.currentTarget.value)}
+            onChange={(event) => handleScrub(event.currentTarget.value)}
+          />
+          <div>
+            <span>Day 1</span>
+            <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
+            <span>{activeSeason === 8 ? `Day ${maxDay}` : "Finale"}</span>
+          </div>
+        </div>
       </section>
 
       <section className="cards">
-        {ranked.map((prediction) => {
-          const low = Math.max(0, prediction.displayProbability - Math.sqrt(Math.max(1, cursorDay - dataset.currentDay)) * 0.018);
-          const high = Math.min(0.7, prediction.displayProbability + Math.sqrt(Math.max(1, cursorDay - dataset.currentDay)) * 0.018);
+        {activeRanked.map((prediction) => {
+          const fanDays = Math.max(1, maxDay - selectedDay);
+          const low = Math.max(0, prediction.displayProbability - Math.sqrt(fanDays) * 0.018);
+          const high = Math.min(0.7, prediction.displayProbability + Math.sqrt(fanDays) * 0.018);
           return (
             <article className="contestant-card" key={prediction.contestant.id}>
               <IslanderPhoto contestant={prediction.contestant} />
@@ -238,7 +277,7 @@ export default function Home() {
                 <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
               </div>
               <strong>{pct(prediction.displayProbability)}</strong>
-              {projectionMode && <span>{pct(low)} to {pct(high)}</span>}
+              {fanMode && <span>{pct(low)} to {pct(high)}</span>}
             </article>
           );
         })}

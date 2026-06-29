@@ -270,6 +270,36 @@ svg {
   stroke-width: 2.4;
 }
 
+.scrubber {
+  display: grid;
+  gap: 8px;
+  max-width: 720px;
+  margin: 6px auto 0;
+}
+
+.scrubber input {
+  width: 100%;
+  height: 22px;
+  accent-color: var(--accent);
+  cursor: grab;
+}
+
+.scrubber input:active {
+  cursor: grabbing;
+}
+
+.scrubber div {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.scrubber strong {
+  color: var(--text);
+}
+
 .cards {
   display: grid;
   grid-template-columns: repeat(4, 1fr);

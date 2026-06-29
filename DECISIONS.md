@@ -23,3 +23,9 @@ Reason: this keeps daily collection fast and avoids backend complexity while the
 Season 8 live mode includes a hand-seeded active/Casa roster and gives Bryce and Trinity stronger prior momentum.
 
 Reason: the dashboard is still using synthetic aggregate rows until Agent-Reach/social ingestion is connected, and the placeholder model should reflect obvious current-season favorites rather than imply the scraper has real live signal coverage.
+
+## 2026-06-29 - Local islander images
+
+Use local images from `public/islanders/{display-name}.jpg` instead of hotlinking Fandom images.
+
+Reason: remote wiki image redirects were unreliable in the app, and a local drop folder gives Marcus direct control over preview photos.

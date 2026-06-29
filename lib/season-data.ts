@@ -27,8 +27,8 @@ const palette = [
   "#ff7f50"
 ];
 
-function photo(fileName: string) {
-  return `https://loveisland.fandom.com/wiki/Special:Redirect/file/${encodeURIComponent(fileName)}`;
+function photo(displayName: string) {
+  return `/islanders/${displayName.toLowerCase().replaceAll(" ", "-")}.jpg`;
 }
 
 function contestant(
@@ -39,17 +39,18 @@ function contestant(
   index: number,
   enteredDay = 1,
   status: SeasonDataset["contestants"][number]["status"] = "active",
-  photoFile = `USA_S8_${name.replaceAll(" ", "_")}.jpg`
+  exitDay?: number
 ) {
   return {
     id,
     name,
     displayName,
     gender,
-    photoUrl: photo(photoFile),
+    photoUrl: photo(displayName),
     color: palette[index % palette.length],
     isOG: enteredDay === 1,
     enteredDay,
+    exitDay,
     status
   };
 }
@@ -136,16 +137,16 @@ export const season7: SeasonDataset = {
   finalDate: "2025-07-13",
   currentDay: 32,
   contestants: [
-    contestant("s7-amaya", "Amaya Espinal", "Amaya", "woman", 0, 5, "winner", "USA_S7_Amaya_Espinal.jpg"),
-    contestant("s7-bryan", "Bryan Arenales", "Bryan", "man", 1, 10, "winner", "USA_S7_Bryan_Arenales.jpg"),
-    contestant("s7-oclandria", "Olandria Carthen", "Olandria", "woman", 2, 1, "runner-up", "USA_S7_Olandria_Carthen.jpg"),
-    contestant("s7-nic", "Nic Vansteenberghe", "Nic", "man", 3, 1, "runner-up", "USA_S7_Nic_Vansteenberghe.jpg"),
-    contestant("s7-huda", "Huda Mustafa", "Huda", "woman", 4, 1, "runner-up", "USA_S7_Huda_Mustafa.jpg"),
-    contestant("s7-chris", "Chris Seeley", "Chris", "man", 5, 12, "runner-up", "USA_S7_Chris_Seeley.jpg"),
-    contestant("s7-chelley", "Chelley Bissainthe", "Chelley", "woman", 6, 1, "runner-up", "USA_S7_Chelley_Bissainthe.jpg"),
-    contestant("s7-ace", "Ace Greene", "Ace", "man", 7, 1, "runner-up", "USA_S7_Ace_Greene.jpg"),
-    contestant("s7-taylor", "Taylor Williams", "Taylor", "man", 8, 1, "dumped", "USA_S7_Taylor_Williams.jpg"),
-    contestant("s7-cierra", "Cierra Ortega", "Cierra", "woman", 9, 1, "dumped", "USA_S7_Cierra_Ortega.jpg")
+    contestant("s7-amaya", "Amaya Espinal", "Amaya", "woman", 0, 5, "winner"),
+    contestant("s7-bryan", "Bryan Arenales", "Bryan", "man", 1, 10, "winner"),
+    contestant("s7-oclandria", "Olandria Carthen", "Olandria", "woman", 2, 1, "runner-up"),
+    contestant("s7-nic", "Nic Vansteenberghe", "Nic", "man", 3, 1, "runner-up"),
+    contestant("s7-huda", "Huda Mustafa", "Huda", "woman", 4, 1, "runner-up"),
+    contestant("s7-chris", "Chris Seeley", "Chris", "man", 5, 12, "runner-up"),
+    contestant("s7-chelley", "Chelley Bissainthe", "Chelley", "woman", 6, 1, "runner-up"),
+    contestant("s7-ace", "Ace Greene", "Ace", "man", 7, 1, "runner-up"),
+    contestant("s7-taylor", "Taylor Williams", "Taylor", "man", 8, 1, "dumped", 24),
+    contestant("s7-cierra", "Cierra Ortega", "Cierra", "woman", 9, 1, "dumped", 25)
   ],
   series: [],
   outcomes: {
