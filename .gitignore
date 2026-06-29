@@ -1,0 +1,14 @@
+node_modules/
+.next/
+out/
+dist/
+.env
+.env.local
+*.sqlite
+*.db
+data/raw/
+data/private/
+__pycache__/
+.pytest_cache/
+coverage/
+*.egg-info/
