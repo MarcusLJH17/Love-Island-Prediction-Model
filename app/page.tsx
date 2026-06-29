@@ -326,22 +326,19 @@ export default function Home() {
 }
 
 function IslanderPhoto({ contestant }: { contestant: { displayName: string; photoUrl: string } }) {
-  const [loaded, setLoaded] = useState(false);
+  const [failed, setFailed] = useState(false);
 
   return (
     <span className="photo">
       <span aria-hidden="true">{contestant.displayName.slice(0, 1)}</span>
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={contestant.photoUrl}
-        alt=""
-        style={{ opacity: loaded ? 1 : 0 }}
-        onLoad={() => setLoaded(true)}
-        onError={(event) => {
-          setLoaded(false);
-          event.currentTarget.style.display = "none";
-        }}
-      />
+      {!failed && (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={contestant.photoUrl}
+          alt=""
+          onError={() => setFailed(true)}
+        />
+      )}
     </span>
   );
 }
