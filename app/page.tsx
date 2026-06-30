@@ -105,7 +105,7 @@ export default function Home() {
   }, [exportedDay]);
 
   const ranked = predictions
-    .map((prediction, index) => {
+    .map((prediction) => {
       const historical = prediction.points[cursorIndex]?.probability ?? 0;
       const projection = makeProjection(prediction, cursorIndex, projectionDays, { cursorDay: activeDay, season: activeSeason });
       const projectedValue = projectionMode ? projection[Math.round(selectedDay - dataset.currentDay) - 1] ?? projection[0] : historical;
@@ -218,7 +218,7 @@ export default function Home() {
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
           <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
-          <span>{projectionMode ? "Momentum projection carries recent slope, signal pressure, and risk forward." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
+          <span>{projectionMode ? "Momentum projection is shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
         </div>
       </section>
 
@@ -228,7 +228,7 @@ export default function Home() {
             <p>Panel 1</p>
             <h2>{activeSeason === 8 ? `Live forecast - ${dayLabel(selectedDay).toLowerCase()}` : `Backtest - day 1 to ${selectedDay.toFixed(1)}`}</h2>
           </div>
-          <span>{activeSeason === 8 ? "Solid = history - dashed = momentum projection" : "Solid = historical model value - dashed = cursor projection"}</span>
+          <span>{activeSeason === 8 ? "Solid = history - dashed = projection" : "Solid = historical model value - dashed = projection"}</span>
         </div>
         <svg
           ref={chartRef}
@@ -303,8 +303,8 @@ export default function Home() {
       <section className="cards">
         {activeRanked.map((prediction) => {
           const fanDays = Math.max(1, maxDay - selectedDay);
-          const projectedEnd = prediction.projection[Math.max(0, Math.ceil(fanDays) - 1)] ?? prediction.displayProbability;
-          const movement = projectedEnd - prediction.displayProbability;
+          const low = Math.max(0, Math.min(...prediction.projection, prediction.displayProbability));
+          const high = Math.min(0.7, Math.max(...prediction.projection, prediction.displayProbability));
           return (
             <article className="contestant-card" key={prediction.contestant.id}>
               <IslanderPhoto contestant={prediction.contestant} />
@@ -313,7 +313,7 @@ export default function Home() {
                 <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
               </div>
               <strong>{pct(prediction.displayProbability)}</strong>
-              {fanMode && <span>{movement >= 0 ? "+" : ""}{pct(movement)} projected</span>}
+              {fanMode && <span>{pct(low)} to {pct(high)}</span>}
             </article>
           );
         })}
