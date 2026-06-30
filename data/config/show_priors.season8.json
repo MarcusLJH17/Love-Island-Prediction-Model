@@ -1,0 +1,15 @@
+{
+  "season": 8,
+  "notes": "Editable show-state priors. Positive values boost winner equity; negative values reflect story/risk drag. Applied from day 24 onward.",
+  "effectiveFromDay": 24,
+  "priors": {
+    "s8-bryce": 0.82,
+    "s8-trinity": 0.84,
+    "s8-aniya": 0.46,
+    "s8-carl": 0.42,
+    "s8-amora": 0.30,
+    "s8-kc": -0.38,
+    "s8-corbin": -0.30,
+    "s8-sincere": -0.22
+  }
+}

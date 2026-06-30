@@ -48,6 +48,7 @@ export type SeasonDataset = {
 export type ManualTikTokEntry = {
   id: string;
   date: string;
+  day?: number;
   contestantId: string;
   positiveSentiment: boolean;
   visibleEditVolume: number;
@@ -59,6 +60,7 @@ export type ManualTikTokEntry = {
 export type ManualEpisodeEntry = {
   id: string;
   date: string;
+  day?: number;
   contestantId: string;
   episodeEnjoyment: number;
   gotGoodEdit: boolean;

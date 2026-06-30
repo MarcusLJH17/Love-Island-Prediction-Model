@@ -25,6 +25,17 @@ type ExportedPredictionPayload = {
   }[];
 };
 
+type SourceHealthPayload = {
+  generatedAt: string;
+  sources: {
+    source: string;
+    latestCollectedAt: string | null;
+    latestFeatureDate: string | null;
+    rawPosts: number;
+    mentions: number;
+  }[];
+};
+
 const chartWidth = 980;
 const chartHeight = 420;
 const leftPad = 44;
@@ -64,6 +75,7 @@ export default function Home() {
   const [tiktokEntries, setTikTokEntries] = useState<ManualTikTokEntry[]>([]);
   const [episodeEntries, setEpisodeEntries] = useState<ManualEpisodeEntry[]>([]);
   const [exportedPredictions, setExportedPredictions] = useState<ExportedPredictionPayload | null>(null);
+  const [sourceHealth, setSourceHealth] = useState<SourceHealthPayload | null>(null);
   const chartRef = useRef<SVGSVGElement | null>(null);
 
   useEffect(() => {
@@ -75,11 +87,19 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
+    refreshExports();
+  }, []);
+
+  function refreshExports() {
     fetch("/data/processed/predictions/season8_daily.json", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((payload: ExportedPredictionPayload | null) => setExportedPredictions(payload))
       .catch(() => setExportedPredictions(null));
-  }, []);
+    fetch("/data/processed/source_health.json", { cache: "no-store" })
+      .then((response) => (response.ok ? response.json() : null))
+      .then((payload: SourceHealthPayload | null) => setSourceHealth(payload))
+      .catch(() => setSourceHealth(null));
+  }
 
   const dataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
   const predictions = useMemo(
@@ -98,7 +118,8 @@ export default function Home() {
   const exportedDay = useMemo(() => {
     if (activeSeason !== 8 || exportedPredictions?.season !== 8) return null;
     const roundedDay = Math.round(activeDay);
-    return exportedPredictions.days.find((item) => item.day === roundedDay) ?? null;
+    const matches = exportedPredictions.days.filter((item) => item.day === roundedDay);
+    return matches[matches.length - 1] ?? null;
   }, [activeDay, activeSeason, exportedPredictions]);
   const exportedById = useMemo(() => {
     return new Map((exportedDay?.contestants ?? []).map((item) => [item.id, item]));
@@ -139,12 +160,13 @@ export default function Home() {
     window.history.replaceState(null, "", season === 8 ? "/" : "/?season=7");
   }
 
-  function submitTikTok(event: FormEvent<HTMLFormElement>) {
+  async function submitTikTok(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const entry: ManualTikTokEntry = {
       id: crypto.randomUUID(),
       date: todayId(),
+      day: dataset.currentDay,
       contestantId: String(form.get("contestantId")),
       positiveSentiment: form.get("positiveSentiment") === "yes",
       visibleEditVolume: Number(form.get("visibleEditVolume")),
@@ -153,15 +175,18 @@ export default function Home() {
       notes: String(form.get("notes") ?? "")
     };
     setTikTokEntries((items) => [entry, ...items]);
+    await fetch("/api/manual/tiktok", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(entry) });
+    refreshExports();
     event.currentTarget.reset();
   }
 
-  function submitEpisode(event: FormEvent<HTMLFormElement>) {
+  async function submitEpisode(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const form = new FormData(event.currentTarget);
     const entry: ManualEpisodeEntry = {
       id: crypto.randomUUID(),
       date: todayId(),
+      day: dataset.currentDay,
       contestantId: String(form.get("contestantId")),
       episodeEnjoyment: Number(form.get("episodeEnjoyment")),
       gotGoodEdit: form.get("gotGoodEdit") === "yes",
@@ -170,6 +195,8 @@ export default function Home() {
       notes: String(form.get("notes") ?? "")
     };
     setEpisodeEntries((items) => [entry, ...items]);
+    await fetch("/api/manual/episode", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(entry) });
+    refreshExports();
     event.currentTarget.reset();
   }
 
@@ -219,6 +246,11 @@ export default function Home() {
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
           <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
           <span>{projectionMode ? "Momentum projection is shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
+        </div>
+        <div className="panel status">
+          <div className="panel-title"><Activity size={17} /> Source Health</div>
+          <strong>{sourceHealth ? new Date(sourceHealth.generatedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) : "Pending"}</strong>
+          <span>{sourceHealth?.sources.map((source) => `${source.source}: ${source.mentions ?? 0}`).join(" · ") ?? "No exported source health yet."}</span>
         </div>
       </section>
 
@@ -323,7 +355,7 @@ export default function Home() {
         <section className="forms-grid">
           <form className="panel entry-form" onSubmit={submitTikTok}>
             <div className="panel-title"><Eye size={17} /> TikTok Observation</div>
-            <SelectContestant contestants={dataset.contestants} />
+            <SelectContestant contestants={dataset.contestants.filter((contestant) => isActiveAt(contestant, activeDay))} />
             <YesNo name="positiveSentiment" label="Overall sentiment positive?" />
             <Range name="visibleEditVolume" label="Edit volume seen" />
             <Range name="commentTone" label="Comment tone" />
@@ -334,7 +366,7 @@ export default function Home() {
 
           <form className="panel entry-form" onSubmit={submitEpisode}>
             <div className="panel-title"><CalendarPlus size={17} /> Episode Thoughts</div>
-            <SelectContestant contestants={dataset.contestants} />
+            <SelectContestant contestants={dataset.contestants.filter((contestant) => isActiveAt(contestant, activeDay))} />
             <Range name="episodeEnjoyment" label="How strong was their episode?" />
             <YesNo name="gotGoodEdit" label="Did they get a good edit?" />
             <Range name="relationshipStrength" label="Relationship strength" />

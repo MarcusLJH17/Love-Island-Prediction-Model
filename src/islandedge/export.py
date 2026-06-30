@@ -48,3 +48,50 @@ def export_predictions(database_path: Path, season: int, output_path: Path) -> d
     output_path.parent.mkdir(parents=True, exist_ok=True)
     output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
     return payload
+
+
+def export_source_health(database_path: Path, season: int, output_path: Path) -> dict:
+    rows = fetch_all(
+        database_path,
+        """
+        SELECT source, MAX(posted_at) AS latest_posted_at, MAX(collected_at) AS latest_collected_at, COUNT(*) AS raw_posts
+        FROM raw_social_posts
+        WHERE season = ?
+        GROUP BY source
+        ORDER BY source
+        """,
+        (season,),
+    )
+    metric_rows = fetch_all(
+        database_path,
+        """
+        SELECT source, MAX(feature_date) AS latest_feature_date, SUM(mention_volume) AS mentions
+        FROM daily_source_metrics
+        WHERE season = ?
+        GROUP BY source
+        ORDER BY source
+        """,
+        (season,),
+    )
+    metrics = {row["source"]: row for row in metric_rows}
+    sources = []
+    for row in rows:
+        metric = metrics.get(row["source"])
+        sources.append(
+            {
+                "source": row["source"],
+                "latestPostedAt": row["latest_posted_at"],
+                "latestCollectedAt": row["latest_collected_at"],
+                "latestFeatureDate": metric["latest_feature_date"] if metric else None,
+                "rawPosts": row["raw_posts"],
+                "mentions": metric["mentions"] if metric else 0,
+            }
+        )
+    payload = {
+        "season": season,
+        "generatedAt": datetime.now(timezone.utc).isoformat(),
+        "sources": sources,
+    }
+    output_path.parent.mkdir(parents=True, exist_ok=True)
+    output_path.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+    return payload

@@ -89,6 +89,18 @@ python scripts/build_features.py --day 28 --date 2026-06-29
 python scripts/export_predictions.py
 ```
 
+Or run the full daily local pipeline in one command:
+
+```bash
+python scripts/run_daily_pipeline.py --day 28 --date 2026-06-29
+```
+
+Use `--skip-scrape` to rebuild from existing local data after editing show priors or adding manual notes:
+
+```bash
+python scripts/run_daily_pipeline.py --day 28 --date 2026-06-29 --skip-scrape
+```
+
 9. Run the app and refresh the Season 8 tab:
 
 ```bash

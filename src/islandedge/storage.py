@@ -201,6 +201,42 @@ def insert_mentions(database_path: Path, rows: Iterable[dict]) -> None:
         )
 
 
+def insert_manual_tiktok_entry(database_path: Path, row: dict) -> None:
+    initialize(database_path)
+    with connect(database_path) as connection:
+        connection.execute(
+            """
+            INSERT INTO manual_tiktok_entries (
+              feature_date, contestant_id, positive_sentiment,
+              visible_edit_volume, comment_tone, viral_momentum, notes
+            )
+            VALUES (
+              :feature_date, :contestant_id, :positive_sentiment,
+              :visible_edit_volume, :comment_tone, :viral_momentum, :notes
+            )
+            """,
+            row,
+        )
+
+
+def insert_manual_episode_entry(database_path: Path, row: dict) -> None:
+    initialize(database_path)
+    with connect(database_path) as connection:
+        connection.execute(
+            """
+            INSERT INTO manual_episode_entries (
+              feature_date, contestant_id, episode_enjoyment,
+              got_good_edit, relationship_strength, risk_of_dumping, notes
+            )
+            VALUES (
+              :feature_date, :contestant_id, :episode_enjoyment,
+              :got_good_edit, :relationship_strength, :risk_of_dumping, :notes
+            )
+            """,
+            row,
+        )
+
+
 def delete_mentions_for_posts(database_path: Path, raw_post_ids: Iterable[str]) -> int:
     initialize(database_path)
     ids = list(dict.fromkeys(raw_post_ids))

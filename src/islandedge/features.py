@@ -5,6 +5,8 @@ import math
 from collections import defaultdict
 from dataclasses import dataclass
 from datetime import date, timedelta
+from functools import lru_cache
+from pathlib import Path
 
 from islandedge.contestants import Contestant, active_contestants, contestants_for_season
 from islandedge.storage import (
@@ -17,17 +19,6 @@ from islandedge.storage import (
 
 SOCIAL_SOURCES = ("reddit", "twitter")
 ALL_SOURCES = ("reddit", "twitter", "trends", "tiktok", "episode", "personal", "show")
-
-SEASON8_POST_CASA_PRIORS = {
-    "s8-bryce": 0.82,
-    "s8-trinity": 0.84,
-    "s8-aniya": 0.46,
-    "s8-carl": 0.42,
-    "s8-amora": 0.30,
-    "s8-kc": -0.38,
-    "s8-corbin": -0.30,
-    "s8-sincere": -0.22,
-}
 
 
 @dataclass(frozen=True)
@@ -182,9 +173,18 @@ def weighted_score(row: dict) -> float:
 
 
 def show_prior_score(season: int, contestant_id: str, day: int) -> float:
-    if season == 8 and day >= 24:
-        return SEASON8_POST_CASA_PRIORS.get(contestant_id, 0.0)
-    return 0.0
+    config = load_show_prior_config(season)
+    if day < int(config.get("effectiveFromDay", 999)):
+        return 0.0
+    return float(config.get("priors", {}).get(contestant_id, 0.0))
+
+
+@lru_cache(maxsize=8)
+def load_show_prior_config(season: int) -> dict:
+    path = Path("data") / "config" / f"show_priors.season{season}.json"
+    if not path.exists():
+        return {"effectiveFromDay": 999, "priors": {}}
+    return json.loads(path.read_text(encoding="utf-8"))
 
 
 def load_source_lookup(database_path, season: int, feature_date: date, days: int):
