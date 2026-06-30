@@ -101,6 +101,11 @@ export default function Home() {
       .catch(() => setSourceHealth(null));
   }
 
+  function healthSummary() {
+    if (!sourceHealth?.sources.length) return "No source data";
+    return sourceHealth.sources.map((source) => `${source.source} ${source.mentions ?? 0}`).join(" / ");
+  }
+
   const dataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
   const predictions = useMemo(
     () => buildPredictions(dataset, signals, activeSeason === 8 ? tiktokEntries : [], activeSeason === 8 ? episodeEntries : []),
@@ -234,7 +239,10 @@ export default function Home() {
 
       <section className="control-band">
         <div className="panel signals">
-          <div className="panel-title"><SlidersHorizontal size={17} /> Source Toggles</div>
+          <div className="panel-title split-title">
+            <span><SlidersHorizontal size={17} /> Source Toggles</span>
+            <span className="health-inline"><Activity size={15} /> {healthSummary()}</span>
+          </div>
           {(Object.keys(signalLabels) as SignalKey[]).map((key) => (
             <button key={key} className={signals[key] ? "signal on" : "signal"} onClick={() => toggleSignal(key)}>
               <span>{signalLabels[key]}</span>

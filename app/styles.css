@@ -148,7 +148,7 @@ button {
 }
 
 .control-band {
-  grid-template-columns: minmax(520px, 2fr) minmax(220px, 1fr) minmax(260px, 1fr);
+  grid-template-columns: minmax(0, 2fr) minmax(240px, 0.85fr);
   margin-bottom: 16px;
 }
 
@@ -168,14 +168,35 @@ button {
   font-weight: 700;
 }
 
+.split-title {
+  justify-content: space-between;
+}
+
+.split-title span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.health-inline {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
 .signals {
   display: grid;
-  grid-template-columns: repeat(6, minmax(110px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(112px, 1fr));
   gap: 8px;
 }
 
 .signals .panel-title {
   grid-column: 1 / -1;
+}
+
+.control-band > .status:last-child {
+  display: none;
 }
 
 .signal {
