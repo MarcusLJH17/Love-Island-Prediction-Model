@@ -43,6 +43,8 @@ const rightPad = 24;
 const topPad = 28;
 const bottomPad = 38;
 const projectionDays = 12;
+const liveDataset = datasets.find((item) => item.season === 8) ?? datasets[0];
+const backtestDataset = datasets.find((item) => item.season === 7) ?? datasets[1];
 
 function pct(value: number) {
   return `${Math.round(value * 100)}%`;
@@ -71,7 +73,7 @@ function isActiveAt(contestant: { enteredDay: number; exitDay?: number }, day: n
 export default function Home() {
   const [activeSeason, setActiveSeason] = useState<7 | 8>(8);
   const [signals, setSignals] = useState(defaultSignals);
-  const [cursorDay, setCursorDay] = useState(28);
+  const [cursorDay, setCursorDay] = useState(liveDataset.currentDay);
   const [tiktokEntries, setTikTokEntries] = useState<ManualTikTokEntry[]>([]);
   const [episodeEntries, setEpisodeEntries] = useState<ManualEpisodeEntry[]>([]);
   const [exportedPredictions, setExportedPredictions] = useState<ExportedPredictionPayload | null>(null);
@@ -161,7 +163,7 @@ export default function Home() {
 
   function selectSeason(season: 7 | 8) {
     setActiveSeason(season);
-    setCursorDay(season === 8 ? 28 : 32);
+    setCursorDay(season === 8 ? liveDataset.currentDay : backtestDataset.currentDay);
     window.history.replaceState(null, "", season === 8 ? "/" : "/?season=7");
   }
 

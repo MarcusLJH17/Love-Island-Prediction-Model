@@ -130,7 +130,9 @@ season8.series = season8.contestants.map((c, index) => ({
     21: index % 5 === 2 ? 0.5 : 0,
     24: c.id === "s8-bryce" || c.id === "s8-trinity" ? 0.85 : 0,
     26: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.15 : c.id === "s8-kenzie" ? 0.32 : 0,
-    28: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.25 : 0
+    28: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.25 : 0,
+    29: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.2 : 0,
+    30: c.id === "s8-bryce" || c.id === "s8-trinity" ? 1.3 : 0
   })
 }));
 
