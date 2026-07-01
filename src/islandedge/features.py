@@ -160,11 +160,12 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
 def weighted_score(row: dict) -> float:
     score = 0.0
     current_social = mean_present([row["reddit_score"], row["twitter_score"]])
-    if current_social is not None:
-        score += current_social * 0.24
-    score += float(row["social_3d_score"]) * 0.18
+    blended_social = mean_present([current_social, row["social_3d_score"]])
+    if blended_social is not None:
+        score += blended_social * 0.18
+    score += float(row["social_3d_score"]) * 0.16
     score += float(row["social_7d_score"]) * 0.08
-    score += float(row["show_prior_score"]) * 0.58
+    score += float(row["show_prior_score"]) * 0.72
     for optional_key in ("tiktok_score", "episode_score", "personal_score"):
         value = row[optional_key]
         if value is not None:
