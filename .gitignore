@@ -8,6 +8,7 @@ dist/
 *.db
 data/raw/
 data/private/
+data/logs/
 __pycache__/
 .pytest_cache/
 coverage/

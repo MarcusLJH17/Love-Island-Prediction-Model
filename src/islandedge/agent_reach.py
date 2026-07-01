@@ -11,6 +11,21 @@ from typing import Iterable
 
 from islandedge.contestants import Contestant
 
+PRIORITY_CONTESTANT_IDS = (
+    "s8-trinity",
+    "s8-bryce",
+    "s8-aniya",
+    "s8-carl",
+    "s8-kenzie",
+    "s8-dylan",
+    "s8-jen",
+    "s8-gal",
+    "s8-corbin",
+    "s8-parmida",
+    "s8-kc",
+    "s8-titi",
+)
+
 
 @dataclass(frozen=True)
 class SearchRequest:
@@ -61,8 +76,10 @@ def run_agent_reach(command: list[str], timeout_seconds: int) -> str:
 
 def twitter_queries(contestants: Iterable[Contestant]) -> list[str]:
     queries: list[str] = []
-    for contestant in contestants:
+    ordered = priority_order(contestants)
+    for contestant in ordered:
         queries.append(f"{contestant.display_name} Love Island USA")
+    for contestant in ordered:
         if contestant.full_name != contestant.display_name:
             queries.append(f"{contestant.full_name} Love Island USA")
     queries.extend(["Love Island USA", "LIUSA", "Casa Amor Love Island USA"])
@@ -70,9 +87,20 @@ def twitter_queries(contestants: Iterable[Contestant]) -> list[str]:
 
 
 def reddit_queries(contestants: Iterable[Contestant], subreddit: str = "LoveIslandUSA") -> list[str]:
-    queries = [contestant.display_name for contestant in contestants]
+    queries = [contestant.display_name for contestant in priority_order(contestants)]
     queries.extend(["recoupling", "casa", "episode"])
     return dedupe(queries)
+
+
+def priority_order(contestants: Iterable[Contestant]) -> list[Contestant]:
+    priority = {contestant_id: index for index, contestant_id in enumerate(PRIORITY_CONTESTANT_IDS)}
+    return sorted(
+        contestants,
+        key=lambda contestant: (
+            priority.get(getattr(contestant, "id", ""), len(priority)),
+            contestant.display_name.casefold(),
+        ),
+    )
 
 
 def collect_twitter(request: SearchRequest, timeout_seconds: int) -> list[dict]:

@@ -92,13 +92,19 @@ python scripts/export_predictions.py
 Or run the full daily local pipeline in one command:
 
 ```bash
-python scripts/run_daily_pipeline.py --day 28 --date 2026-06-29
+python scripts/run_daily_pipeline.py --date 2026-07-01
 ```
 
 Use `--skip-scrape` to rebuild from existing local data after editing show priors or adding manual notes:
 
 ```bash
-python scripts/run_daily_pipeline.py --day 28 --date 2026-06-29 --skip-scrape
+python scripts/run_daily_pipeline.py --date 2026-07-01 --skip-scrape
+```
+
+The pipeline can infer the Love Island season day from the date, using Season 8's June 2, 2026 start date. For a just-after-midnight end-of-day scrape, use yesterday's date automatically:
+
+```bash
+python scripts/run_daily_pipeline.py --target-date yesterday
 ```
 
 9. Run the app and refresh the Season 8 tab:
@@ -108,3 +114,15 @@ npm run dev
 ```
 
 Raw scraped posts stay in the local SQLite database only. Commit aggregate exports only when they are safe for the portfolio repo.
+
+### Daily Automation On Windows
+
+Install the local scheduled task:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts\install_daily_task.ps1
+```
+
+This creates a Windows Task Scheduler job named `IslandEdge Daily Update` that runs at 12:05 AM every day. It scrapes Reddit and Twitter/X for the previous calendar day, rebuilds features, and exports the frontend JSON. Logs are written locally to `data/logs/` and are ignored by git.
+
+The automation updates your local app data. It does not auto-commit or auto-push by default, so personal notes, scraped raw text, and credentials stay local unless you intentionally publish aggregate outputs.
