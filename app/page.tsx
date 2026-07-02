@@ -66,6 +66,15 @@ function dayLabel(day: number) {
   return Number.isInteger(day) ? `Day ${day}` : `Day ${day.toFixed(1)}`;
 }
 
+function chartTicks(maxValue: number) {
+  const step = maxValue <= 0.3 ? 0.05 : 0.1;
+  const ticks: number[] = [];
+  for (let value = step; value < maxValue; value += step) {
+    ticks.push(Number(value.toFixed(2)));
+  }
+  return ticks;
+}
+
 function isActiveAt(contestant: { enteredDay: number; exitDay?: number }, day: number) {
   return contestant.enteredDay <= day && (contestant.exitDay == null || contestant.exitDay >= day);
 }
@@ -117,7 +126,6 @@ export default function Home() {
   const selectedDay = clamp(cursorDay, 1, maxDay);
   const activeDay = Math.max(1, Math.floor(Math.min(selectedDay, dataset.currentDay)));
   const xScale = (day: number) => leftPad + ((day - 1) / (maxDay - 1)) * (chartWidth - leftPad - rightPad);
-  const yScale = (value: number) => topPad + (1 - value / 0.5) * (chartHeight - topPad - bottomPad);
   const cursorX = xScale(selectedDay);
   const cursorIndex = clamp(Math.round(Math.min(selectedDay, dataset.currentDay)) - 1, 0, dataset.currentDay - 1);
   const projectionMode = activeSeason === 8 && selectedDay > dataset.currentDay;
@@ -131,6 +139,16 @@ export default function Home() {
   const exportedById = useMemo(() => {
     return new Map((exportedDay?.contestants ?? []).map((item) => [item.id, item]));
   }, [exportedDay]);
+  const exportedByDayAndId = useMemo(() => {
+    const lookup = new Map<string, number>();
+    if (activeSeason !== 8 || exportedPredictions?.season !== 8) return lookup;
+    exportedPredictions.days.forEach((day) => {
+      day.contestants.forEach((contestant) => {
+        lookup.set(`${day.day}:${contestant.id}`, contestant.probability);
+      });
+    });
+    return lookup;
+  }, [activeSeason, exportedPredictions]);
 
   const ranked = predictions
     .map((prediction) => {
@@ -144,6 +162,23 @@ export default function Home() {
   const activeRanked = ranked.filter((item) => isActiveAt(item.contestant, activeDay));
   const topWoman = activeRanked.find((item) => item.contestant.gender === "woman");
   const topMan = activeRanked.find((item) => item.contestant.gender === "man");
+  const chartMaxValue = Math.min(
+    0.7,
+    Math.max(
+      0.2,
+      Math.ceil(
+        Math.max(
+          ...activeRanked.flatMap((prediction) => [
+            prediction.displayProbability,
+            ...prediction.points.map((point) => exportedByDayAndId.get(`${point.day}:${prediction.contestant.id}`) ?? point.probability),
+            ...prediction.projection
+          ]),
+          0.2
+        ) * 1.18 / 0.05
+      ) * 0.05
+    )
+  );
+  const yScale = (value: number) => topPad + (1 - value / chartMaxValue) * (chartHeight - topPad - bottomPad);
 
   function handlePointer(event: PointerEvent<SVGSVGElement>) {
     const rect = chartRef.current?.getBoundingClientRect();
@@ -285,7 +320,7 @@ export default function Home() {
         >
           <rect x={leftPad} y={topPad} width={xScale(dataset.currentDay) - leftPad} height={chartHeight - topPad - bottomPad} className="history-zone" />
           {activeSeason === 8 && <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />}
-          {[0.1, 0.2, 0.3, 0.4].map((value) => (
+          {chartTicks(chartMaxValue).map((value) => (
             <g key={value}>
               <line x1={leftPad} x2={chartWidth - rightPad} y1={yScale(value)} y2={yScale(value)} className="grid" />
               <text x={8} y={yScale(value) + 4} className="axis">{pct(value)}</text>
@@ -293,8 +328,12 @@ export default function Home() {
           ))}
           {activeRanked.map((prediction, index) => {
             const visibleHistory = prediction.points.filter((point) => point.day >= prediction.contestant.enteredDay && point.day <= Math.min(dataset.currentDay, maxDay));
-            const historyPath = visibleHistory.map((point) => `${coord(xScale(point.day))},${coord(yScale(point.probability))}`).join(" ");
-            const base = prediction.points[cursorIndex]?.probability ?? 0;
+            const historyPath = visibleHistory.map((point) => {
+              const exportedValue = exportedByDayAndId.get(`${point.day}:${prediction.contestant.id}`);
+              return `${coord(xScale(point.day))},${coord(yScale(exportedValue ?? point.probability))}`;
+            }).join(" ");
+            const basePoint = prediction.points[cursorIndex];
+            const base = exportedByDayAndId.get(`${basePoint?.day}:${prediction.contestant.id}`) ?? basePoint?.probability ?? 0;
             const fanLength = Math.max(0, Math.ceil(maxDay - selectedDay));
             const projection = makeProjection(prediction, cursorIndex, fanLength, { cursorDay: activeDay, season: activeSeason });
             const projectionPath = projection.map((value, pIndex) => {
