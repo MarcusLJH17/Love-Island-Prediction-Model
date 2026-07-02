@@ -50,6 +50,10 @@ function pct(value: number) {
   return `${Math.round(value * 100)}%`;
 }
 
+function displayPct(value: number) {
+  return pct(Math.max(value, 0.01));
+}
+
 function todayId() {
   return new Date().toISOString().slice(0, 10);
 }
@@ -100,7 +104,7 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
   if (blendedSocial != null) score += blendedSocial * 0.24;
   if (social3d != null) score += social3d * 0.16;
   if (social7d != null) score += social7d * 0.06;
-  if (signals.show && breakdown.show != null) score += breakdown.show * 0.88;
+  if (signals.show && breakdown.show != null) score += breakdown.show * 0.64;
   if (signals.tiktok && breakdown.tiktok != null) score += breakdown.tiktok * 0.10;
   if (signals.episode && breakdown.episode != null) score += breakdown.episode * 0.10;
   if (signals.personal && breakdown.personal != null) score += breakdown.personal * 0.10;
@@ -110,7 +114,7 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
 
 function exportedProbabilityMap(contestants: ExportedContestantPrediction[], signals: Record<SignalKey, boolean>) {
   const scores = contestants.map((contestant) => exportedScore(contestant, signals));
-  const raw = scores.map((score) => Math.exp(score * 4.8));
+  const raw = scores.map((score) => Math.exp(score * 4.6));
   const total = raw.reduce((sum, value) => sum + value, 0) || 1;
   return new Map(contestants.map((contestant, index) => [contestant.id, raw[index] / total]));
 }
@@ -302,7 +306,7 @@ export default function Home() {
             <IslanderPhoto contestant={prediction.contestant} />
             <span className="dot" style={{ background: prediction.contestant.color }} />
             <strong>{prediction.contestant.displayName}</strong>
-            <span>{pct(prediction.displayProbability)}</span>
+            <span>{displayPct(prediction.displayProbability)}</span>
           </button>
         ))}
       </section>
@@ -426,8 +430,8 @@ export default function Home() {
                 <h2>{prediction.contestant.displayName}</h2>
                 <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
               </div>
-              <strong>{pct(prediction.displayProbability)}</strong>
-              {fanMode && <span>{pct(low)} to {pct(high)}</span>}
+              <strong>{displayPct(prediction.displayProbability)}</strong>
+              {fanMode && <span>{displayPct(low)} to {displayPct(high)}</span>}
             </article>
           );
         })}

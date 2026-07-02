@@ -137,7 +137,7 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
         source_breakdown["structure"] = structural_score(contestant, int(row["day"]))
         score = weighted_score(row, contestant)
         scored.append((row, source_breakdown, score))
-    raw = [math.exp(score * 4.8) for _, _, score in scored]
+    raw = [math.exp(score * 4.6) for _, _, score in scored]
     total = sum(raw) or 1
     prediction_rows = []
     for index, (row, source_breakdown, score) in enumerate(scored):
@@ -167,7 +167,7 @@ def weighted_score(row: dict, contestant: Contestant) -> float:
         score += blended_social * 0.24
     score += float(row["social_3d_score"]) * 0.16
     score += float(row["social_7d_score"]) * 0.06
-    score += float(row["show_prior_score"]) * 0.88
+    score += float(row["show_prior_score"]) * 0.64
     for optional_key in ("tiktok_score", "episode_score", "personal_score"):
         value = row[optional_key]
         if value is not None:

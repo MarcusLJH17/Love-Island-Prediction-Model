@@ -1,6 +1,6 @@
 {
   "season": 8,
-  "generatedAt": "2026-07-02T03:45:43.117441+00:00",
+  "generatedAt": "2026-07-02T03:54:18.171571+00:00",
   "days": [
     {
       "date": "2026-06-29",
@@ -9,7 +9,7 @@
         {
           "id": "s8-bryce",
           "displayName": "Bryce",
-          "probability": 0.10399685005274599,
+          "probability": 0.10172931403371409,
           "score": 0.5803761344300633,
           "sourceBreakdown": {
             "episode": null,
@@ -36,7 +36,7 @@
         {
           "id": "s8-aniya",
           "displayName": "Aniya",
-          "probability": 0.09574228558522534,
+          "probability": 0.0939780086141398,
           "score": 0.5631468523021714,
           "sourceBreakdown": {
             "episode": null,
@@ -63,7 +63,7 @@
         {
           "id": "s8-trinity",
           "displayName": "Trinity",
-          "probability": 0.09573359753685998,
+          "probability": 0.09396983597934074,
           "score": 0.5631279464217248,
           "sourceBreakdown": {
             "episode": null,
@@ -90,7 +90,7 @@
         {
           "id": "s8-kc",
           "displayName": "KC",
-          "probability": 0.09143425178863347,
+          "probability": 0.08992169454859367,
           "score": 0.5535552060088847,
           "sourceBreakdown": {
             "episode": null,
@@ -117,7 +117,7 @@
         {
           "id": "s8-zach",
           "displayName": "Zach",
-          "probability": 0.0750251112326928,
+          "probability": 0.07439461082090551,
           "score": 0.5123474392645179,
           "sourceBreakdown": {
             "episode": null,
@@ -144,7 +144,7 @@
         {
           "id": "s8-sincere",
           "displayName": "Sincere",
-          "probability": 0.06948930779770601,
+          "probability": 0.06912574761932926,
           "score": 0.4963786938821061,
           "sourceBreakdown": {
             "episode": null,
@@ -171,7 +171,7 @@
         {
           "id": "s8-melanie",
           "displayName": "Melanie",
-          "probability": 0.06336979544930282,
+          "probability": 0.06328085151242528,
           "score": 0.47717336874731753,
           "sourceBreakdown": {
             "episode": null,
@@ -198,7 +198,7 @@
         {
           "id": "s8-kayda",
           "displayName": "Kayda",
-          "probability": 0.05905227432939308,
+          "probability": 0.05914302598941873,
           "score": 0.4624724774486205,
           "sourceBreakdown": {
             "episode": null,
@@ -225,7 +225,7 @@
         {
           "id": "s8-kenzie",
           "displayName": "Kenzie",
-          "probability": 0.057406669969400276,
+          "probability": 0.05756263890925885,
           "score": 0.4565844443058594,
           "sourceBreakdown": {
             "episode": null,
@@ -252,7 +252,7 @@
         {
           "id": "s8-corbin",
           "displayName": "Corbin",
-          "probability": 0.05185372803898996,
+          "probability": 0.05221547800049307,
           "score": 0.43538993064364334,
           "sourceBreakdown": {
             "episode": null,
@@ -279,7 +279,7 @@
         {
           "id": "s8-jen",
           "displayName": "Jen",
-          "probability": 0.04050977121669511,
+          "probability": 0.04121417122754662,
           "score": 0.38395584253304377,
           "sourceBreakdown": {
             "episode": null,
@@ -306,7 +306,7 @@
         {
           "id": "s8-carl",
           "displayName": "Carl",
-          "probability": 0.036907783320016714,
+          "probability": 0.03769552697706419,
           "score": 0.36455568612949985,
           "sourceBreakdown": {
             "episode": null,
@@ -333,7 +333,7 @@
         {
           "id": "s8-titi",
           "displayName": "Titi",
-          "probability": 0.03271689996263284,
+          "probability": 0.03358343219309563,
           "score": 0.3394451244507677,
           "sourceBreakdown": {
             "episode": null,
@@ -360,7 +360,7 @@
         {
           "id": "s8-amora",
           "displayName": "Amora",
-          "probability": 0.031584156506141305,
+          "probability": 0.032468321282122015,
           "score": 0.332104261043698,
           "sourceBreakdown": {
             "episode": null,
@@ -387,7 +387,7 @@
         {
           "id": "s8-caleb",
           "displayName": "Caleb",
-          "probability": 0.027193324188102202,
+          "probability": 0.02812946525481195,
           "score": 0.3009200715527234,
           "sourceBreakdown": {
             "episode": null,
@@ -414,7 +414,7 @@
         {
           "id": "s8-gal",
           "displayName": "Gal",
-          "probability": 0.024158852648274325,
+          "probability": 0.02511403898655858,
           "score": 0.27626994098982977,
           "sourceBreakdown": {
             "episode": null,
@@ -441,7 +441,7 @@
         {
           "id": "s8-parmida",
           "displayName": "Parmida",
-          "probability": 0.019418044119200114,
+          "probability": 0.020370359499402687,
           "score": 0.23075991199142043,
           "sourceBreakdown": {
             "episode": null,
@@ -468,7 +468,7 @@
         {
           "id": "s8-jaiden",
           "displayName": "Jaiden",
-          "probability": 0.012779622594626085,
+          "probability": 0.01364211006779723,
           "score": 0.14360349002341713,
           "sourceBreakdown": {
             "episode": null,
@@ -495,7 +495,7 @@
         {
           "id": "s8-dylan",
           "displayName": "Dylan",
-          "probability": 0.011627673663361517,
+          "probability": 0.012461368483982105,
           "score": 0.12392349002341713,
           "sourceBreakdown": {
             "episode": null,
@@ -528,8 +528,8 @@
         {
           "id": "s8-trinity",
           "displayName": "Trinity",
-          "probability": 0.7361187407837317,
-          "score": 1.4480479464217249,
+          "probability": 0.5376150401126193,
+          "score": 1.2080479464217246,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -555,8 +555,8 @@
         {
           "id": "s8-bryce",
           "displayName": "Bryce",
-          "probability": 0.09675507068745623,
-          "score": 1.0252961344300633,
+          "probability": 0.1335511339110831,
+          "score": 0.9052961344300633,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -582,8 +582,8 @@
         {
           "id": "s8-aniya",
           "displayName": "Aniya",
-          "probability": 0.08907530953945945,
-          "score": 1.0080668523021714,
+          "probability": 0.12337515230825613,
+          "score": 0.8880668523021714,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -609,8 +609,8 @@
         {
           "id": "s8-carl",
           "displayName": "Carl",
-          "probability": 0.011944185475793317,
-          "score": 0.5894756861294999,
+          "probability": 0.023705577733904002,
+          "score": 0.5294756861294998,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -636,7 +636,7 @@
         {
           "id": "s8-zach",
           "displayName": "Zach",
-          "probability": 0.008445595002358428,
+          "probability": 0.022411011710668685,
           "score": 0.5172674392645179,
           "sourceBreakdown": {
             "episode": null,
@@ -663,7 +663,7 @@
         {
           "id": "s8-sincere",
           "displayName": "Sincere",
-          "probability": 0.00782242826449707,
+          "probability": 0.02082379250742963,
           "score": 0.5012986938821061,
           "sourceBreakdown": {
             "episode": null,
@@ -690,7 +690,7 @@
         {
           "id": "s8-melanie",
           "displayName": "Melanie",
-          "probability": 0.0071335532724127685,
+          "probability": 0.019063046216077878,
           "score": 0.48209336874731756,
           "sourceBreakdown": {
             "episode": null,
@@ -717,7 +717,7 @@
         {
           "id": "s8-kayda",
           "displayName": "Kayda",
-          "probability": 0.006647528870798856,
+          "probability": 0.017816546567386325,
           "score": 0.46739247744862056,
           "sourceBreakdown": {
             "episode": null,
@@ -744,7 +744,7 @@
         {
           "id": "s8-kenzie",
           "displayName": "Kenzie",
-          "probability": 0.006462282788117164,
+          "probability": 0.0173404627090257,
           "score": 0.46150444430585935,
           "sourceBreakdown": {
             "episode": null,
@@ -771,7 +771,7 @@
         {
           "id": "s8-corbin",
           "displayName": "Corbin",
-          "probability": 0.005837186765661369,
+          "probability": 0.01572965670543405,
           "score": 0.4403099306436433,
           "sourceBreakdown": {
             "episode": null,
@@ -798,7 +798,7 @@
         {
           "id": "s8-jen",
           "displayName": "Jen",
-          "probability": 0.004560194789625559,
+          "probability": 0.012415566985754,
           "score": 0.3888758425330438,
           "sourceBreakdown": {
             "episode": null,
@@ -825,7 +825,7 @@
         {
           "id": "s8-titi",
           "displayName": "Titi",
-          "probability": 0.0036829493789096394,
+          "probability": 0.010116844269483243,
           "score": 0.3443651244507677,
           "sourceBreakdown": {
             "episode": null,
@@ -852,7 +852,7 @@
         {
           "id": "s8-amora",
           "displayName": "Amora",
-          "probability": 0.0035554361727588644,
+          "probability": 0.009780922575576058,
           "score": 0.337024261043698,
           "sourceBreakdown": {
             "episode": null,
@@ -879,7 +879,7 @@
         {
           "id": "s8-caleb",
           "displayName": "Caleb",
-          "probability": 0.003061159111757114,
+          "probability": 0.00847386347323008,
           "score": 0.3058400715527234,
           "sourceBreakdown": {
             "episode": null,
@@ -906,7 +906,7 @@
         {
           "id": "s8-gal",
           "displayName": "Gal",
-          "probability": 0.00271956791315051,
+          "probability": 0.007565481096270403,
           "score": 0.28118994098982975,
           "sourceBreakdown": {
             "episode": null,
@@ -931,9 +931,36 @@
           }
         },
         {
+          "id": "s8-kc",
+          "displayName": "KC",
+          "probability": 0.006215885292568034,
+          "score": 0.2384752060088847,
+          "sourceBreakdown": {
+            "episode": null,
+            "personal": null,
+            "reddit": null,
+            "show": -0.5,
+            "social3d": 0.8334678391497494,
+            "social7d": 0.8334678391497494,
+            "structure": 0.9726666666666666,
+            "tiktok": null,
+            "trends": null,
+            "twitter": null
+          },
+          "sourceAvailable": {
+            "episode": false,
+            "personal": false,
+            "reddit": false,
+            "show": true,
+            "tiktok": false,
+            "trends": false,
+            "twitter": false
+          }
+        },
+        {
           "id": "s8-parmida",
           "displayName": "Parmida",
-          "probability": 0.0021858939450292874,
+          "probability": 0.0061364709117257546,
           "score": 0.23567991199142044,
           "sourceBreakdown": {
             "episode": null,
@@ -960,7 +987,7 @@
         {
           "id": "s8-jaiden",
           "displayName": "Jaiden",
-          "probability": 0.0014386052208899477,
+          "probability": 0.004109618762891911,
           "score": 0.14852349002341714,
           "sourceBreakdown": {
             "episode": null,
@@ -987,7 +1014,7 @@
         {
           "id": "s8-dylan",
           "displayName": "Dylan",
-          "probability": 0.0013089300497770959,
+          "probability": 0.0037539261506157762,
           "score": 0.12884349002341713,
           "sourceBreakdown": {
             "episode": null,
@@ -1010,33 +1037,6 @@
             "trends": false,
             "twitter": false
           }
-        },
-        {
-          "id": "s8-kc",
-          "displayName": "KC",
-          "probability": 0.0012453819678157159,
-          "score": 0.1184752060088847,
-          "sourceBreakdown": {
-            "episode": null,
-            "personal": null,
-            "reddit": null,
-            "show": -0.5,
-            "social3d": 0.8334678391497494,
-            "social7d": 0.8334678391497494,
-            "structure": 0.9726666666666666,
-            "tiktok": null,
-            "trends": null,
-            "twitter": null
-          },
-          "sourceAvailable": {
-            "episode": false,
-            "personal": false,
-            "reddit": false,
-            "show": true,
-            "tiktok": false,
-            "trends": false,
-            "twitter": false
-          }
         }
       ]
     },
@@ -1047,8 +1047,8 @@
         {
           "id": "s8-trinity",
           "displayName": "Trinity",
-          "probability": 0.6527990709523144,
-          "score": 1.3902064197194206,
+          "probability": 0.4852815599208112,
+          "score": 1.1502064197194206,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -1074,8 +1074,8 @@
         {
           "id": "s8-bryce",
           "displayName": "Bryce",
-          "probability": 0.2268599185209827,
-          "score": 1.1700112837809988,
+          "probability": 0.22044855376839784,
+          "score": 0.978670570373865,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -1101,8 +1101,8 @@
         {
           "id": "s8-melanie",
           "displayName": "Melanie",
-          "probability": 0.028559974814627468,
-          "score": 0.7382766020433527,
+          "probability": 0.05535971134217377,
+          "score": 0.6782766020433528,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -1128,8 +1128,8 @@
         {
           "id": "s8-aniya",
           "displayName": "Aniya",
-          "probability": 0.022193129439225544,
-          "score": 0.6857300396742203,
+          "probability": 0.05014388289980713,
+          "score": 0.6567645224328409,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -1155,8 +1155,8 @@
         {
           "id": "s8-carl",
           "displayName": "Carl",
-          "probability": 0.014847048954185335,
-          "score": 0.6019838658446963,
+          "probability": 0.029574293187320404,
+          "score": 0.5419838658446964,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
@@ -1182,7 +1182,7 @@
         {
           "id": "s8-kenzie",
           "displayName": "Kenzie",
-          "probability": 0.010522061916250885,
+          "probability": 0.028020195892374315,
           "score": 0.5302490879011742,
           "sourceBreakdown": {
             "episode": null,
@@ -1209,7 +1209,7 @@
         {
           "id": "s8-corbin",
           "displayName": "Corbin",
-          "probability": 0.007158307473979972,
+          "probability": 0.019370958053625906,
           "score": 0.44999895851898575,
           "sourceBreakdown": {
             "episode": null,
@@ -1236,7 +1236,7 @@
         {
           "id": "s8-jen",
           "displayName": "Jen",
-          "probability": 0.00592566079931817,
+          "probability": 0.01616208070923648,
           "score": 0.4106278421440506,
           "sourceBreakdown": {
             "episode": null,
@@ -1263,7 +1263,7 @@
         {
           "id": "s8-kayda",
           "displayName": "Kayda",
-          "probability": 0.0057091720166462,
+          "probability": 0.015595779910945245,
           "score": 0.4028740503104442,
           "sourceBreakdown": {
             "episode": null,
@@ -1288,9 +1288,36 @@
           }
         },
         {
+          "id": "s8-sincere",
+          "displayName": "Sincere",
+          "probability": 0.01299938763685048,
+          "score": 0.3632875051723594,
+          "sourceBreakdown": {
+            "episode": null,
+            "personal": null,
+            "reddit": 0.7325680233896562,
+            "show": -0.25,
+            "social3d": 0.7386000586399477,
+            "social7d": 0.7386000586399477,
+            "structure": 1.0,
+            "tiktok": null,
+            "trends": null,
+            "twitter": 0.8034900638566297
+          },
+          "sourceAvailable": {
+            "episode": false,
+            "personal": false,
+            "reddit": true,
+            "show": true,
+            "tiktok": false,
+            "trends": false,
+            "twitter": true
+          }
+        },
+        {
           "id": "s8-titi",
           "displayName": "Titi",
-          "probability": 0.003956398898021315,
+          "probability": 0.010974138043619604,
           "score": 0.32646993261056817,
           "sourceBreakdown": {
             "episode": null,
@@ -1315,21 +1342,21 @@
           }
         },
         {
-          "id": "s8-sincere",
-          "displayName": "Sincere",
-          "probability": 0.0035397588050205264,
-          "score": 0.30328750517235936,
+          "id": "s8-zach",
+          "displayName": "Zach",
+          "probability": 0.009376413359102997,
+          "score": 0.29226469371659647,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
-            "reddit": 0.7325680233896562,
+            "reddit": 0.2495046138591025,
             "show": -0.25,
-            "social3d": 0.7386000586399477,
-            "social7d": 0.7386000586399477,
+            "social3d": 0.6233292796903168,
+            "social7d": 0.6233292796903168,
             "structure": 1.0,
             "tiktok": null,
             "trends": null,
-            "twitter": 0.8034900638566297
+            "twitter": 0.7560410298390435
           },
           "sourceAvailable": {
             "episode": false,
@@ -1344,7 +1371,7 @@
         {
           "id": "s8-caleb",
           "displayName": "Caleb",
-          "probability": 0.0032772466398903856,
+          "probability": 0.009161939709831006,
           "score": 0.28723438853955274,
           "sourceBreakdown": {
             "episode": null,
@@ -1371,7 +1398,7 @@
         {
           "id": "s8-dylan",
           "displayName": "Dylan",
-          "probability": 0.0031781832473005327,
+          "probability": 0.008896366406645838,
           "score": 0.28083982538171565,
           "sourceBreakdown": {
             "episode": null,
@@ -1398,7 +1425,7 @@
         {
           "id": "s8-amora",
           "displayName": "Amora",
-          "probability": 0.00284911960632599,
+          "probability": 0.00801165524540674,
           "score": 0.2580690563905905,
           "sourceBreakdown": {
             "episode": null,
@@ -1425,7 +1452,7 @@
         {
           "id": "s8-jaiden",
           "displayName": "Jaiden",
-          "probability": 0.0026710860801785344,
+          "probability": 0.007531250133168795,
           "score": 0.24462637405902882,
           "sourceBreakdown": {
             "episode": null,
@@ -1450,21 +1477,21 @@
           }
         },
         {
-          "id": "s8-zach",
-          "displayName": "Zach",
-          "probability": 0.002517204840557974,
-          "score": 0.23226469371659644,
+          "id": "s8-kc",
+          "displayName": "KC",
+          "probability": 0.0057905153335922385,
+          "score": 0.18748729652116725,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
-            "reddit": 0.2495046138591025,
-            "show": -0.25,
-            "social3d": 0.6233292796903168,
-            "social7d": 0.6233292796903168,
+            "reddit": 0.5401583865067743,
+            "show": -0.5,
+            "social3d": 0.737074891757133,
+            "social7d": 0.737074891757133,
             "structure": 1.0,
             "tiktok": null,
             "trends": null,
-            "twitter": 0.7560410298390435
+            "twitter": 0.7412055022222591
           },
           "sourceAvailable": {
             "episode": false,
@@ -1479,7 +1506,7 @@
         {
           "id": "s8-parmida",
           "displayName": "Parmida",
-          "probability": 0.0019963246967778276,
+          "probability": 0.005697435229935953,
           "score": 0.1839644317861654,
           "sourceBreakdown": {
             "episode": null,
@@ -1504,37 +1531,10 @@
           }
         },
         {
-          "id": "s8-kc",
-          "displayName": "KC",
-          "probability": 0.001141356639041367,
-          "score": 0.06748729652116725,
-          "sourceBreakdown": {
-            "episode": null,
-            "personal": null,
-            "reddit": 0.5401583865067743,
-            "show": -0.5,
-            "social3d": 0.737074891757133,
-            "social7d": 0.737074891757133,
-            "structure": 1.0,
-            "tiktok": null,
-            "trends": null,
-            "twitter": 0.7412055022222591
-          },
-          "sourceAvailable": {
-            "episode": false,
-            "personal": false,
-            "reddit": true,
-            "show": true,
-            "tiktok": false,
-            "trends": false,
-            "twitter": true
-          }
-        },
-        {
           "id": "s8-gal",
           "displayName": "Gal",
-          "probability": 0.0002989756593549337,
-          "score": -0.21159826699312112,
+          "probability": 0.0016038832171540887,
+          "score": -0.09159826699312112,
           "sourceBreakdown": {
             "episode": null,
             "personal": null,
