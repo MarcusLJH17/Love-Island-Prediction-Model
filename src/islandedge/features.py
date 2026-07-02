@@ -135,7 +135,7 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
         }
         score = weighted_score(row)
         scored.append((row, source_breakdown, score))
-    raw = [math.exp(score * 2.4) for _, _, score in scored]
+    raw = [math.exp(score * 4.8) for _, _, score in scored]
     total = sum(raw) or 1
     prediction_rows = []
     for index, (row, source_breakdown, score) in enumerate(scored):
@@ -162,10 +162,10 @@ def weighted_score(row: dict) -> float:
     current_social = mean_present([row["reddit_score"], row["twitter_score"]])
     blended_social = mean_present([current_social, row["social_3d_score"]])
     if blended_social is not None:
-        score += blended_social * 0.18
+        score += blended_social * 0.24
     score += float(row["social_3d_score"]) * 0.16
-    score += float(row["social_7d_score"]) * 0.08
-    score += float(row["show_prior_score"]) * 0.72
+    score += float(row["social_7d_score"]) * 0.06
+    score += float(row["show_prior_score"]) * 0.88
     for optional_key in ("tiktok_score", "episode_score", "personal_score"):
         value = row[optional_key]
         if value is not None:
@@ -176,6 +176,7 @@ def weighted_score(row: dict) -> float:
 def show_prior_score(season: int, contestant_id: str, day: int) -> float:
     events = load_recap_events(season)
     scored_events = []
+    weights = []
     for event in events:
         if event.get("contestantId") != contestant_id:
             continue
@@ -185,9 +186,10 @@ def show_prior_score(season: int, contestant_id: str, day: int) -> float:
         recency = 0.86 ** max(0, day - event_day)
         sentiment = recap_sentiment(str(event.get("text", "")))
         scored_events.append(sentiment * recency)
+        weights.append(recency)
     if not scored_events:
         return 0.0
-    return max(-1.0, min(1.0, sum(scored_events) / len(scored_events)))
+    return max(-1.0, min(1.0, sum(scored_events) / (sum(weights) or 1.0)))
 
 
 @lru_cache(maxsize=8)
@@ -204,10 +206,13 @@ def recap_sentiment(text: str) -> float:
     positive = {
         "official",
         "romantic",
+        "romantically",
         "standout",
         "true",
         "heroically",
         "defends",
+        "reunite",
+        "reunites",
         "reuniting",
         "relief",
         "support",
@@ -241,17 +246,38 @@ def load_source_lookup(database_path, season: int, feature_date: date, days: int
     rows = fetch_all(
         database_path,
         """
-        SELECT contestant_id, feature_date, source, engagement_weighted_sentiment, sentiment_mean, source_available
+        SELECT contestant_id, feature_date, source, mention_volume, engagement_total,
+               engagement_weighted_sentiment, sentiment_mean, source_available
         FROM daily_source_metrics
         WHERE season = ? AND feature_date BETWEEN ? AND ?
         """,
         (season, start_date, feature_date.isoformat()),
     )
+    max_by_day_source: dict[tuple[str, str], dict[str, float]] = defaultdict(lambda: {"mentions": 0.0, "engagement": 0.0})
+    for row in rows:
+        key = (row["feature_date"], row["source"])
+        max_by_day_source[key]["mentions"] = max(max_by_day_source[key]["mentions"], float(row["mention_volume"] or 0))
+        max_by_day_source[key]["engagement"] = max(max_by_day_source[key]["engagement"], float(row["engagement_total"] or 0))
     lookup = {}
     for row in rows:
         value = row["engagement_weighted_sentiment"] if row["engagement_weighted_sentiment"] is not None else row["sentiment_mean"]
-        lookup[(row["contestant_id"], row["feature_date"], row["source"])] = float(value or 0)
+        max_values = max_by_day_source[(row["feature_date"], row["source"])]
+        mention_ratio = ratio(float(row["mention_volume"] or 0), max_values["mentions"])
+        engagement_ratio = ratio(float(row["engagement_total"] or 0), max_values["engagement"])
+        volume_signal = (mention_ratio * 2) - 1
+        engagement_signal = (engagement_ratio * 2) - 1
+        lookup[(row["contestant_id"], row["feature_date"], row["source"])] = (
+            float(value or 0) * 0.62
+            + volume_signal * 0.28
+            + engagement_signal * 0.10
+        )
     return lookup
+
+
+def ratio(value: float, max_value: float) -> float:
+    if max_value <= 0:
+        return 0.0
+    return math.log1p(max(0.0, value)) / math.log1p(max_value)
 
 
 def source_value(source_lookup, contestant_id: str, feature_date: date, source: str) -> float | None:

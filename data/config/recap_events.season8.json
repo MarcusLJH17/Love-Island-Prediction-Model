@@ -3,112 +3,112 @@
   "notes": "Source-attributed recap events. The model scores each event text with sentiment analysis and applies a small recency decay. These rows should come from public recaps, not personal predictions.",
   "events": [
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-trinity",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episodes-21-23-peacock.html",
       "text": "Trinity heroically defends her friends while reuniting romantically with Bryce."
     },
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-bryce",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episodes-21-23-peacock.html",
       "text": "Trinity and Bryce reunite romantically after Casa Amor."
     },
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-aniya",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episodes-21-23-peacock.html",
       "text": "Aniya's teary confrontation after Casa Amor is raw, vulnerable, and stunned audiences."
     },
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-kc",
       "source": "Marie Claire",
       "url": "https://www.marieclaire.com/culture/tv-shows/love-island-usa-season-8-casa-amor-recap/",
       "text": "Aniya and KC's relationship is deteriorating after KC's disrespectful treatment and attraction to Tierra."
     },
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-carl",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episodes-21-23-peacock.html",
       "text": "A fan vote brings back Carl, creating visible emotional relief for Aniya."
     },
     {
-      "day": 23,
+      "day": 29,
       "contestantId": "s8-amora",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episodes-21-23-peacock.html",
       "text": "A fan vote brings back Amora after Casa Amor."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-trinity",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Trinity and Bryce make their relationship official during a romantic yacht date, a standout moment as the villa's first true couple."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-bryce",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Trinity and Bryce make their relationship official during a romantic yacht date, a standout moment as the villa's first true couple."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-aniya",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Aniya confronts KC over toxic behavior after Casa Amor."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-gal",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Gal ends things with Jen via a manipulative breakup."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-corbin",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Corbin fails to convince Kenzie he deserves forgiveness."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-amora",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Amora reveals Sincere's questionable antics, earning viewer support."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-sincere",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Amora reveals Sincere's questionable antics."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-melanie",
       "source": "Vulture",
       "url": "https://www.vulture.com/article/love-island-usa-recap-season-8-episode-24-peacock.html",
       "text": "Melanie delivers powerful lines to Sincere about respect."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-kc",
       "source": "Cosmopolitan",
       "url": "https://www.cosmopolitan.com/entertainment/tv/a71793193/love-island-usa-movie-night-review/",
       "text": "KC's behavior is portrayed as problematic, insulting Aniya behind her back and showing double standards."
     },
     {
-      "day": 24,
+      "day": 30,
       "contestantId": "s8-zach",
       "source": "Cosmopolitan",
       "url": "https://www.cosmopolitan.com/entertainment/tv/a71793193/love-island-usa-movie-night-review/",

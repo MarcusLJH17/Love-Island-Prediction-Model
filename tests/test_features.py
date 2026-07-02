@@ -51,10 +51,10 @@ def test_build_predictions_from_social_mentions(tmp_path):
 
 def test_recap_events_create_source_based_show_signal(tmp_path):
     db = tmp_path / "islandedge.sqlite"
-    contestants = active_contestants(8, 28)
+    contestants = active_contestants(8, 30)
     upsert_contestants(db, 8, contestants_for_season(8))
 
-    rows = build_feature_rows(db, 8, date(2026, 6, 29), 28, contestants)
+    rows = build_feature_rows(db, 8, date(2026, 7, 1), 30, contestants)
     by_id = {row["contestant_id"]: row for row in rows}
 
     assert by_id["s8-bryce"]["show_prior_score"] > 0

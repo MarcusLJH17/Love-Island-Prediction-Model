@@ -97,10 +97,10 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
   const blendedSocial = meanPresent([currentSocial, social3d]);
 
   let score = 0;
-  if (blendedSocial != null) score += blendedSocial * 0.18;
+  if (blendedSocial != null) score += blendedSocial * 0.24;
   if (social3d != null) score += social3d * 0.16;
-  if (social7d != null) score += social7d * 0.08;
-  if (signals.show && breakdown.show != null) score += breakdown.show * 0.72;
+  if (social7d != null) score += social7d * 0.06;
+  if (signals.show && breakdown.show != null) score += breakdown.show * 0.88;
   if (signals.tiktok && breakdown.tiktok != null) score += breakdown.tiktok * 0.10;
   if (signals.episode && breakdown.episode != null) score += breakdown.episode * 0.10;
   if (signals.personal && breakdown.personal != null) score += breakdown.personal * 0.10;
@@ -109,7 +109,7 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
 
 function exportedProbabilityMap(contestants: ExportedContestantPrediction[], signals: Record<SignalKey, boolean>) {
   const scores = contestants.map((contestant) => exportedScore(contestant, signals));
-  const raw = scores.map((score) => Math.exp(score * 2.4));
+  const raw = scores.map((score) => Math.exp(score * 4.8));
   const total = raw.reduce((sum, value) => sum + value, 0) || 1;
   return new Map(contestants.map((contestant, index) => [contestant.id, raw[index] / total]));
 }
