@@ -73,17 +73,19 @@ def export_source_health(database_path: Path, season: int, output_path: Path) ->
         """,
         (season,),
     )
+    raw_by_source = {row["source"]: row for row in rows}
     metrics = {row["source"]: row for row in metric_rows}
     sources = []
-    for row in rows:
-        metric = metrics.get(row["source"])
+    for source in sorted(set(raw_by_source) | set(metrics)):
+        row = raw_by_source.get(source)
+        metric = metrics.get(source)
         sources.append(
             {
-                "source": row["source"],
-                "latestPostedAt": row["latest_posted_at"],
-                "latestCollectedAt": row["latest_collected_at"],
+                "source": source,
+                "latestPostedAt": row["latest_posted_at"] if row else None,
+                "latestCollectedAt": row["latest_collected_at"] if row else None,
                 "latestFeatureDate": metric["latest_feature_date"] if metric else None,
-                "rawPosts": row["raw_posts"],
+                "rawPosts": row["raw_posts"] if row else 0,
                 "mentions": metric["mentions"] if metric else 0,
             }
         )

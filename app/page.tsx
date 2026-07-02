@@ -104,6 +104,7 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
   if (blendedSocial != null) score += blendedSocial * 0.24;
   if (social3d != null) score += social3d * 0.16;
   if (social7d != null) score += social7d * 0.06;
+  if (signals.trends && breakdown.trends != null) score += breakdown.trends * 0.08;
   if (signals.show && breakdown.show != null) score += breakdown.show * 0.64;
   if (signals.tiktok && breakdown.tiktok != null) score += breakdown.tiktok * 0.10;
   if (signals.episode && breakdown.episode != null) score += breakdown.episode * 0.10;

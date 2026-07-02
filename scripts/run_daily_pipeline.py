@@ -24,6 +24,7 @@ def parse_args() -> argparse.Namespace:
     )
     parser.add_argument("--twitter-max-queries", type=int, default=8)
     parser.add_argument("--skip-scrape", action="store_true")
+    parser.add_argument("--skip-trends", action="store_true")
     return parser.parse_args()
 
 
@@ -71,6 +72,8 @@ def main() -> None:
                 str(args.twitter_max_queries),
             ]
         )
+        if not args.skip_trends:
+            run([sys.executable, "scripts/collect_trends.py", "--day", str(day), "--date", date_arg])
     run([sys.executable, "scripts/build_features.py", "--day", str(day), "--date", date_arg])
     run([sys.executable, "scripts/export_predictions.py"])
 

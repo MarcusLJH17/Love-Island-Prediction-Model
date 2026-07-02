@@ -96,6 +96,8 @@ Or run the full daily local pipeline in one command:
 python scripts/run_daily_pipeline.py --date 2026-07-01
 ```
 
+That command collects Reddit, Twitter/X, and Google Trends, then rebuilds features and exports frontend JSON. Use `--skip-trends` if Google Trends is rate-limited and you want the social scrape to continue.
+
 Use `--skip-scrape` to rebuild from existing local data after editing show priors or adding manual notes:
 
 ```bash
@@ -130,6 +132,6 @@ Install the local scheduled task:
 powershell -ExecutionPolicy Bypass -File scripts\install_daily_task.ps1
 ```
 
-This creates a Windows Task Scheduler job named `IslandEdge Daily Update` that runs at 12:05 AM every day. It scrapes Reddit and Twitter/X for the previous calendar day, rebuilds features, and exports the frontend JSON. Logs are written locally to `data/logs/` and are ignored by git.
+This creates a Windows Task Scheduler job named `IslandEdge Daily Update` that runs at 12:05 AM every day. It scrapes Reddit and Twitter/X plus Google Trends for the previous calendar day, rebuilds features, and exports the frontend JSON. Logs are written locally to `data/logs/` and are ignored by git.
 
 The automation updates your local app data. It does not auto-commit or auto-push by default, so personal notes, scraped raw text, and credentials stay local unless you intentionally publish aggregate outputs.

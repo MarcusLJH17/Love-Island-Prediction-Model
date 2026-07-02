@@ -84,10 +84,12 @@ def build_feature_rows(database_path, season: int, feature_date: date, day: int,
         availability = {source: False for source in ALL_SOURCES}
         reddit_today = source_value(source_lookup, contestant.id, feature_date, "reddit")
         twitter_today = source_value(source_lookup, contestant.id, feature_date, "twitter")
+        trends_today = source_value(source_lookup, contestant.id, feature_date, "trends")
         reddit_score = reddit_today
         twitter_score = twitter_today
         availability["reddit"] = reddit_today is not None
         availability["twitter"] = twitter_today is not None
+        availability["trends"] = trends_today is not None
 
         tiktok_score = manual_tiktok.get(contestant.id)
         personal_score = manual_episode.get(contestant.id)
@@ -105,7 +107,7 @@ def build_feature_rows(database_path, season: int, feature_date: date, day: int,
                 "day": day,
                 "reddit_score": reddit_score,
                 "twitter_score": twitter_score,
-                "trends_score": None,
+                "trends_score": trends_today,
                 "tiktok_score": tiktok_score,
                 "episode_score": personal_score,
                 "personal_score": personal_score,
@@ -167,6 +169,8 @@ def weighted_score(row: dict, contestant: Contestant) -> float:
         score += blended_social * 0.24
     score += float(row["social_3d_score"]) * 0.16
     score += float(row["social_7d_score"]) * 0.06
+    if row["trends_score"] is not None:
+        score += float(row["trends_score"]) * 0.08
     score += float(row["show_prior_score"]) * 0.64
     for optional_key in ("tiktok_score", "episode_score", "personal_score"):
         value = row[optional_key]
@@ -271,6 +275,9 @@ def load_source_lookup(database_path, season: int, feature_date: date, days: int
         max_by_day_source[key]["engagement"] = max(max_by_day_source[key]["engagement"], float(row["engagement_total"] or 0))
     lookup = {}
     for row in rows:
+        if row["source"] == "trends":
+            lookup[(row["contestant_id"], row["feature_date"], row["source"])] = max(0.0, min(1.0, float(row["engagement_weighted_sentiment"] or 0)))
+            continue
         value = row["engagement_weighted_sentiment"] if row["engagement_weighted_sentiment"] is not None else row["sentiment_mean"]
         max_values = max_by_day_source[(row["feature_date"], row["source"])]
         mention_ratio = ratio(float(row["mention_volume"] or 0), max_values["mentions"])

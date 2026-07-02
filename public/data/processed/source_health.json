@@ -1,6 +1,6 @@
 {
   "season": 8,
-  "generatedAt": "2026-07-02T03:54:18.176608+00:00",
+  "generatedAt": "2026-07-02T04:05:51.339705+00:00",
   "sources": [
     {
       "source": "reddit",
@@ -9,6 +9,14 @@
       "latestFeatureDate": "2026-07-01",
       "rawPosts": 167,
       "mentions": 389
+    },
+    {
+      "source": "trends",
+      "latestPostedAt": null,
+      "latestCollectedAt": null,
+      "latestFeatureDate": "2026-07-01",
+      "rawPosts": 0,
+      "mentions": 9
     },
     {
       "source": "twitter",
