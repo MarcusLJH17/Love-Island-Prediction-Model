@@ -79,6 +79,41 @@ function isActiveAt(contestant: { enteredDay: number; exitDay?: number }, day: n
   return contestant.enteredDay <= day && (contestant.exitDay == null || contestant.exitDay >= day);
 }
 
+function meanPresent(values: (number | null | undefined)[]) {
+  const present = values.filter((value): value is number => typeof value === "number" && Number.isFinite(value));
+  if (!present.length) return null;
+  return present.reduce((sum, value) => sum + value, 0) / present.length;
+}
+
+function exportedScore(contestant: ExportedContestantPrediction, signals: Record<SignalKey, boolean>) {
+  const breakdown = contestant.sourceBreakdown;
+  const socialOn = signals.reddit || signals.twitter;
+  const currentSocial = meanPresent([
+    signals.reddit ? breakdown.reddit : null,
+    signals.twitter ? breakdown.twitter : null
+  ]);
+  const social3d = socialOn ? breakdown.social3d : null;
+  const social7d = socialOn ? breakdown.social7d : null;
+  const blendedSocial = meanPresent([currentSocial, social3d]);
+
+  let score = 0;
+  if (blendedSocial != null) score += blendedSocial * 0.18;
+  if (social3d != null) score += social3d * 0.16;
+  if (social7d != null) score += social7d * 0.08;
+  if (signals.show && breakdown.show != null) score += breakdown.show * 0.72;
+  if (signals.tiktok && breakdown.tiktok != null) score += breakdown.tiktok * 0.10;
+  if (signals.episode && breakdown.episode != null) score += breakdown.episode * 0.10;
+  if (signals.personal && breakdown.personal != null) score += breakdown.personal * 0.10;
+  return score;
+}
+
+function exportedProbabilityMap(contestants: ExportedContestantPrediction[], signals: Record<SignalKey, boolean>) {
+  const scores = contestants.map((contestant) => exportedScore(contestant, signals));
+  const raw = scores.map((score) => Math.exp(score * 2.4));
+  const total = raw.reduce((sum, value) => sum + value, 0) || 1;
+  return new Map(contestants.map((contestant, index) => [contestant.id, raw[index] / total]));
+}
+
 export default function Home() {
   const [activeSeason, setActiveSeason] = useState<7 | 8>(8);
   const [signals, setSignals] = useState(defaultSignals);
@@ -136,26 +171,27 @@ export default function Home() {
     const matches = exportedPredictions.days.filter((item) => item.day === roundedDay);
     return matches[matches.length - 1] ?? null;
   }, [activeDay, activeSeason, exportedPredictions]);
-  const exportedById = useMemo(() => {
-    return new Map((exportedDay?.contestants ?? []).map((item) => [item.id, item]));
-  }, [exportedDay]);
   const exportedByDayAndId = useMemo(() => {
     const lookup = new Map<string, number>();
     if (activeSeason !== 8 || exportedPredictions?.season !== 8) return lookup;
     exportedPredictions.days.forEach((day) => {
+      const adjusted = exportedProbabilityMap(day.contestants, signals);
       day.contestants.forEach((contestant) => {
-        lookup.set(`${day.day}:${contestant.id}`, contestant.probability);
+        lookup.set(`${day.day}:${contestant.id}`, adjusted.get(contestant.id) ?? contestant.probability);
       });
     });
     return lookup;
-  }, [activeSeason, exportedPredictions]);
+  }, [activeSeason, exportedPredictions, signals]);
+  const exportedAdjustedById = useMemo(() => {
+    return exportedDay ? exportedProbabilityMap(exportedDay.contestants, signals) : new Map<string, number>();
+  }, [exportedDay, signals]);
 
   const ranked = predictions
     .map((prediction) => {
       const historical = prediction.points[cursorIndex]?.probability ?? 0;
       const projection = makeProjection(prediction, cursorIndex, projectionDays, { cursorDay: activeDay, season: activeSeason });
       const projectedValue = projectionMode ? projection[Math.round(selectedDay - dataset.currentDay) - 1] ?? projection[0] : historical;
-      const exportedValue = !projectionMode ? exportedById.get(prediction.contestant.id)?.probability : undefined;
+      const exportedValue = !projectionMode ? exportedAdjustedById.get(prediction.contestant.id) : undefined;
       return { ...prediction, displayProbability: exportedValue ?? projectedValue, projection };
     })
     .sort((a, b) => b.displayProbability - a.displayProbability);

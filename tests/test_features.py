@@ -49,7 +49,7 @@ def test_build_predictions_from_social_mentions(tmp_path):
     assert result.prediction_rows == len(contestants)
 
 
-def test_post_casa_priors_anchor_current_favorites(tmp_path):
+def test_recap_events_create_source_based_show_signal(tmp_path):
     db = tmp_path / "islandedge.sqlite"
     contestants = active_contestants(8, 28)
     upsert_contestants(db, 8, contestants_for_season(8))
@@ -57,10 +57,9 @@ def test_post_casa_priors_anchor_current_favorites(tmp_path):
     rows = build_feature_rows(db, 8, date(2026, 6, 29), 28, contestants)
     by_id = {row["contestant_id"]: row for row in rows}
 
-    assert by_id["s8-bryce"]["show_prior_score"] > 0.8
-    assert by_id["s8-trinity"]["show_prior_score"] > 0.8
-    assert by_id["s8-aniya"]["show_prior_score"] > 0.4
-    assert by_id["s8-carl"]["show_prior_score"] > 0.4
+    assert by_id["s8-bryce"]["show_prior_score"] > 0
+    assert by_id["s8-trinity"]["show_prior_score"] > 0
+    assert by_id["s8-kc"]["show_prior_score"] < 0
     assert "s8-corey" not in by_id
     assert "s8-chay" not in by_id
 

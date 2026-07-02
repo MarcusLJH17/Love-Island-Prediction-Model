@@ -14,7 +14,8 @@ export const signalLabels: Record<SignalKey, string> = {
   trends: "Google Trends",
   tiktok: "TikTok",
   episode: "Episode Data",
-  personal: "Personal Notes"
+  personal: "Personal Notes",
+  show: "Show Recaps"
 };
 
 export const defaultSignals: Record<SignalKey, boolean> = {
@@ -23,7 +24,8 @@ export const defaultSignals: Record<SignalKey, boolean> = {
   trends: true,
   tiktok: true,
   episode: true,
-  personal: true
+  personal: true,
+  show: true
 };
 
 const weights: Record<SignalKey, number> = {
@@ -32,7 +34,8 @@ const weights: Record<SignalKey, number> = {
   trends: 0.16,
   tiktok: 0.18,
   episode: 0.15,
-  personal: 0.1
+  personal: 0.1,
+  show: 0.12
 };
 
 function sigmoid(value: number) {
@@ -68,7 +71,8 @@ function featureScore(point: FeaturePoint, signals: Record<SignalKey, boolean>, 
     trends: normalizeTrend(point.trends),
     tiktok: point.tiktok + tiktokBoost,
     episode: point.episode + point.coupleStatus * 0.12,
-    personal: point.personal + personalBoost
+    personal: point.personal + personalBoost,
+    show: point.coupleStatus * 0.12 + point.editVolume * 0.02
   };
 
   return (Object.keys(weights) as SignalKey[]).reduce((score, key) => {

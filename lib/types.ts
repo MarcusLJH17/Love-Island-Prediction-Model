@@ -1,4 +1,4 @@
-export type SignalKey = "reddit" | "twitter" | "trends" | "tiktok" | "episode" | "personal";
+export type SignalKey = "reddit" | "twitter" | "trends" | "tiktok" | "episode" | "personal" | "show";
 
 export type Contestant = {
   id: string;

@@ -174,18 +174,66 @@ def weighted_score(row: dict) -> float:
 
 
 def show_prior_score(season: int, contestant_id: str, day: int) -> float:
-    config = load_show_prior_config(season)
-    if day < int(config.get("effectiveFromDay", 999)):
+    events = load_recap_events(season)
+    scored_events = []
+    for event in events:
+        if event.get("contestantId") != contestant_id:
+            continue
+        event_day = int(event.get("day", 999))
+        if event_day > day:
+            continue
+        recency = 0.86 ** max(0, day - event_day)
+        sentiment = recap_sentiment(str(event.get("text", "")))
+        scored_events.append(sentiment * recency)
+    if not scored_events:
         return 0.0
-    return float(config.get("priors", {}).get(contestant_id, 0.0))
+    return max(-1.0, min(1.0, sum(scored_events) / len(scored_events)))
 
 
 @lru_cache(maxsize=8)
-def load_show_prior_config(season: int) -> dict:
-    path = Path("data") / "config" / f"show_priors.season{season}.json"
+def load_recap_events(season: int) -> list[dict]:
+    path = Path("data") / "config" / f"recap_events.season{season}.json"
     if not path.exists():
-        return {"effectiveFromDay": 999, "priors": {}}
-    return json.loads(path.read_text(encoding="utf-8"))
+        return []
+    payload = json.loads(path.read_text(encoding="utf-8"))
+    return list(payload.get("events", []))
+
+
+def recap_sentiment(text: str) -> float:
+    words = [token.strip(".,'\"!?;:()").casefold() for token in text.split()]
+    positive = {
+        "official",
+        "romantic",
+        "standout",
+        "true",
+        "heroically",
+        "defends",
+        "reuniting",
+        "relief",
+        "support",
+        "powerful",
+        "forgiveness",
+        "vulnerable",
+        "stunned",
+        "favorite",
+        "favorites",
+    }
+    negative = {
+        "toxic",
+        "problematic",
+        "disrespectful",
+        "deteriorating",
+        "manipulative",
+        "fails",
+        "questionable",
+        "criticized",
+        "insulting",
+        "breakup",
+    }
+    score = sum(1 for word in words if word in positive) - sum(1 for word in words if word in negative)
+    if score == 0:
+        return 0.0
+    return max(-1.0, min(1.0, score / 4))
 
 
 def load_source_lookup(database_path, season: int, feature_date: date, days: int):

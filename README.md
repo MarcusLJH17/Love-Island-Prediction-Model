@@ -12,6 +12,7 @@ The MVP is intentionally transparent: it starts with an interpretable weighted s
 - Smooth scrubber control under the chart for finer cursor movement.
 - Monte Carlo-style projection fan after the cursor.
 - Source toggles for Reddit, Twitter/X, Google Trends, TikTok, episode data, and personal notes.
+- Source-attributed show recap events that can be toggled separately from personal notes.
 - Two local forms:
   - TikTok observation form.
   - Post-episode personal-opinion form.
@@ -114,6 +115,12 @@ npm run dev
 ```
 
 Raw scraped posts stay in the local SQLite database only. Commit aggregate exports only when they are safe for the portfolio repo.
+
+### Show Recap Events
+
+Show-state context comes from `data/config/recap_events.season8.json`. Each row cites a public recap URL and a short event sentence. The pipeline scores those event sentences for sentiment and applies them as the `show` source.
+
+This replaces manual contestant priors. If the `Show Recaps` toggle is off, recap-event effects are removed from exported probabilities in the frontend.
 
 ### Daily Automation On Windows
 
