@@ -18,6 +18,36 @@ The MVP is intentionally transparent: it starts with an interpretable weighted s
   - Post-episode personal-opinion form.
 - Python scaffolding for future Agent-Reach ingestion and aggregate-feature storage.
 
+## How The Model Works
+
+IslandEdge currently uses an interpretable weighted scoring model, not a black-box machine learning model. For each active contestant, it combines public social sentiment, recent momentum, Google Trends demand, sourced show recap events, optional TikTok/manual notes, and basic show structure into one strength score. The app then converts all active contestants' scores into percentages that add up to 100%.
+
+Current score formula:
+
+```text
+score =
+  0.24 * blended_social
++ 0.16 * social_3_day
++ 0.06 * social_7_day
++ 0.08 * google_trends
++ 0.64 * show_recap
++ 0.10 * tiktok_input
++ 0.10 * episode_input
++ 0.10 * personal_input
++ 0.18 * structure
+```
+
+`blended_social` averages today's Reddit/Twitter signal with 3-day social momentum. Reddit and Twitter/X use sentiment, mention volume, and engagement. Google Trends is upside-only, so sparse search data can help but does not punish a contestant. Missing TikTok or personal entries are ignored rather than treated as negative.
+
+Percentages are produced with a softmax:
+
+```text
+raw_i = e ^ (4.6 * score_i)
+probability_i = raw_i / sum(raw_for_all_active_contestants)
+```
+
+The UI displays a 1% minimum for readability, but the exported model probability can still be below 1%. If the model weights, inputs, or probability conversion change, update this section in the same change.
+
 ## Run Locally
 
 ```bash
