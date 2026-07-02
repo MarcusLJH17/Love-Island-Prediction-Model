@@ -133,7 +133,9 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
             "social3d": row["social_3d_score"],
             "social7d": row["social_7d_score"],
         }
-        score = weighted_score(row)
+        contestant = contestant_lookup[row["contestant_id"]]
+        source_breakdown["structure"] = structural_score(contestant, int(row["day"]))
+        score = weighted_score(row, contestant)
         scored.append((row, source_breakdown, score))
     raw = [math.exp(score * 4.8) for _, _, score in scored]
     total = sum(raw) or 1
@@ -157,7 +159,7 @@ def build_prediction_rows(feature_rows: list[dict], contestants: tuple[Contestan
     return prediction_rows
 
 
-def weighted_score(row: dict) -> float:
+def weighted_score(row: dict, contestant: Contestant) -> float:
     score = 0.0
     current_social = mean_present([row["reddit_score"], row["twitter_score"]])
     blended_social = mean_present([current_social, row["social_3d_score"]])
@@ -170,7 +172,15 @@ def weighted_score(row: dict) -> float:
         value = row[optional_key]
         if value is not None:
             score += float(value) * 0.10
+    score += structural_score(contestant, int(row["day"])) * 0.18
     return score
+
+
+def structural_score(contestant: Contestant, day: int) -> float:
+    days_in_villa = max(0, day - contestant.entered_day + 1)
+    tenure = min(1.0, days_in_villa / 30)
+    og_bonus = 0.18 if contestant.entered_day == 1 else 0.0
+    return min(1.0, tenure * 0.82 + og_bonus)
 
 
 def show_prior_score(season: int, contestant_id: str, day: int) -> float:
@@ -185,8 +195,9 @@ def show_prior_score(season: int, contestant_id: str, day: int) -> float:
             continue
         recency = 0.86 ** max(0, day - event_day)
         sentiment = recap_sentiment(str(event.get("text", "")))
-        scored_events.append(sentiment * recency)
-        weights.append(recency)
+        edit_focus = float(event.get("editFocus", 1.0))
+        scored_events.append(sentiment * edit_focus * recency)
+        weights.append(edit_focus * recency)
     if not scored_events:
         return 0.0
     return max(-1.0, min(1.0, sum(scored_events) / (sum(weights) or 1.0)))

@@ -11,7 +11,7 @@ type ExportedContestantPrediction = {
   displayName: string;
   probability: number;
   score: number;
-  sourceBreakdown: Partial<Record<SignalKey | "social3d" | "social7d", number | null>>;
+  sourceBreakdown: Partial<Record<SignalKey | "social3d" | "social7d" | "structure", number | null>>;
   sourceAvailable: Partial<Record<SignalKey, boolean>>;
 };
 
@@ -104,6 +104,7 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
   if (signals.tiktok && breakdown.tiktok != null) score += breakdown.tiktok * 0.10;
   if (signals.episode && breakdown.episode != null) score += breakdown.episode * 0.10;
   if (signals.personal && breakdown.personal != null) score += breakdown.personal * 0.10;
+  if (breakdown.structure != null) score += breakdown.structure * 0.18;
   return score;
 }
 
