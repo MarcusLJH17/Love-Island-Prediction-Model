@@ -162,22 +162,18 @@ export default function Home() {
   const activeRanked = ranked.filter((item) => isActiveAt(item.contestant, activeDay));
   const topWoman = activeRanked.find((item) => item.contestant.gender === "woman");
   const topMan = activeRanked.find((item) => item.contestant.gender === "man");
-  const chartMaxValue = Math.min(
-    0.7,
-    Math.max(
-      0.2,
-      Math.ceil(
-        Math.max(
-          ...activeRanked.flatMap((prediction) => [
-            prediction.displayProbability,
-            ...prediction.points.map((point) => exportedByDayAndId.get(`${point.day}:${prediction.contestant.id}`) ?? point.probability),
-            ...prediction.projection
-          ]),
-          0.2
-        ) * 1.18 / 0.05
-      ) * 0.05
-    )
-  );
+  const chartMaxValue = useMemo(() => {
+    const values = predictions.flatMap((prediction) => {
+      const currentIndex = clamp(dataset.currentDay - 1, 0, prediction.points.length - 1);
+      const projection = makeProjection(prediction, currentIndex, projectionDays, { cursorDay: dataset.currentDay, season: activeSeason });
+      return [
+        ...prediction.points.map((point) => exportedByDayAndId.get(`${point.day}:${prediction.contestant.id}`) ?? point.probability),
+        ...projection
+      ];
+    });
+    const paddedMax = Math.max(...values, 0.2) * 1.18;
+    return Math.min(0.7, Math.max(0.2, Math.ceil(paddedMax / 0.05) * 0.05));
+  }, [activeSeason, dataset.currentDay, exportedByDayAndId, predictions]);
   const yScale = (value: number) => topPad + (1 - value / chartMaxValue) * (chartHeight - topPad - bottomPad);
 
   function handlePointer(event: PointerEvent<SVGSVGElement>) {
