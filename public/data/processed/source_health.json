@@ -1,30 +1,30 @@
 {
   "season": 8,
-  "generatedAt": "2026-07-02T04:05:51.339705+00:00",
+  "generatedAt": "2026-07-05T03:59:58.941233+00:00",
   "sources": [
     {
       "source": "reddit",
-      "latestPostedAt": "2026-07-01T20:25:40+00:00",
-      "latestCollectedAt": "2026-07-01 21:05:20",
+      "latestPostedAt": "2026-07-01T22:30:57+00:00",
+      "latestCollectedAt": "2026-07-02 04:11:17",
       "latestFeatureDate": "2026-07-01",
-      "rawPosts": 167,
-      "mentions": 389
+      "rawPosts": 178,
+      "mentions": 416
     },
     {
       "source": "trends",
       "latestPostedAt": null,
       "latestCollectedAt": null,
-      "latestFeatureDate": "2026-07-01",
+      "latestFeatureDate": "2026-07-03",
       "rawPosts": 0,
-      "mentions": 9
+      "mentions": 29
     },
     {
       "source": "twitter",
-      "latestPostedAt": "2026-07-01T12:00:00",
-      "latestCollectedAt": "2026-07-01 21:01:07",
-      "latestFeatureDate": "2026-07-01",
-      "rawPosts": 157,
-      "mentions": 402
+      "latestPostedAt": "2026-07-02T12:00:00",
+      "latestCollectedAt": "2026-07-05 03:56:36",
+      "latestFeatureDate": "2026-07-03",
+      "rawPosts": 379,
+      "mentions": 1559
     }
   ]
 }

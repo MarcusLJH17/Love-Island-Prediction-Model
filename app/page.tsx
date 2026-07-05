@@ -4,7 +4,7 @@ import { Activity, BarChart3, CalendarPlus, Eye, GitCompare, Save, SlidersHorizo
 import { FormEvent, PointerEvent, useEffect, useMemo, useRef, useState } from "react";
 import { datasets } from "../lib/season-data";
 import { buildPredictions, defaultSignals, makeProjection, signalLabels } from "../lib/model";
-import type { ManualEpisodeEntry, ManualTikTokEntry, SignalKey } from "../lib/types";
+import type { ManualEpisodeEntry, ManualTikTokEntry, SeasonDataset, SignalKey } from "../lib/types";
 
 type ExportedContestantPrediction = {
   id: string;
@@ -120,6 +120,29 @@ function exportedProbabilityMap(contestants: ExportedContestantPrediction[], sig
   return new Map(contestants.map((contestant, index) => [contestant.id, raw[index] / total]));
 }
 
+function latestExportedDay(payload: ExportedPredictionPayload | null) {
+  if (!payload?.days.length) return null;
+  return Math.max(...payload.days.map((day) => day.day));
+}
+
+function extendDatasetToDay(dataset: SeasonDataset, currentDay: number): SeasonDataset {
+  if (currentDay <= dataset.currentDay) return dataset;
+  return {
+    ...dataset,
+    currentDay,
+    series: dataset.series.map((series) => {
+      if (series.points.length >= currentDay) return series;
+      const points = [...series.points];
+      const fallback = points[points.length - 1];
+      if (!fallback) return series;
+      for (let day = points.length + 1; day <= currentDay; day += 1) {
+        points.push({ ...fallback, day });
+      }
+      return { ...series, points };
+    })
+  };
+}
+
 export default function Home() {
   const [activeSeason, setActiveSeason] = useState<7 | 8>(8);
   const [signals, setSignals] = useState(defaultSignals);
@@ -158,7 +181,14 @@ export default function Home() {
     return sourceHealth.sources.map((source) => `${source.source} ${source.mentions ?? 0}`).join(" / ");
   }
 
-  const dataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
+  const exportedLiveDay = activeSeason === 8 ? latestExportedDay(exportedPredictions) : null;
+  const baseDataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
+  const dataset = activeSeason === 8 && exportedLiveDay ? extendDatasetToDay(baseDataset, exportedLiveDay) : baseDataset;
+  useEffect(() => {
+    if (activeSeason === 8 && exportedLiveDay && cursorDay === liveDataset.currentDay) {
+      setCursorDay(exportedLiveDay);
+    }
+  }, [activeSeason, cursorDay, exportedLiveDay]);
   const predictions = useMemo(
     () => buildPredictions(dataset, signals, activeSeason === 8 ? tiktokEntries : [], activeSeason === 8 ? episodeEntries : []),
     [dataset, signals, activeSeason, tiktokEntries, episodeEntries]
@@ -236,7 +266,7 @@ export default function Home() {
 
   function selectSeason(season: 7 | 8) {
     setActiveSeason(season);
-    setCursorDay(season === 8 ? liveDataset.currentDay : backtestDataset.currentDay);
+    setCursorDay(season === 8 ? exportedLiveDay ?? liveDataset.currentDay : backtestDataset.currentDay);
     window.history.replaceState(null, "", season === 8 ? "/" : "/?season=7");
   }
 

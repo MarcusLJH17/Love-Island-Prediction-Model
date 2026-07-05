@@ -22,6 +22,7 @@ def parse_args() -> argparse.Namespace:
         default="today",
         help="Use yesterday for a midnight end-of-day scheduled scrape.",
     )
+    parser.add_argument("--reddit-max-queries", type=int, default=16)
     parser.add_argument("--twitter-max-queries", type=int, default=8)
     parser.add_argument("--skip-scrape", action="store_true")
     parser.add_argument("--skip-trends", action="store_true")
@@ -57,7 +58,20 @@ def main() -> None:
     date_arg = feature_date.isoformat()
     print(f"Running Season {args.season} Day {day} for {date_arg}", flush=True)
     if not args.skip_scrape:
-        run([sys.executable, "scripts/collect_daily.py", "--day", str(day), "--date", date_arg, "--source", "reddit"])
+        run(
+            [
+                sys.executable,
+                "scripts/collect_daily.py",
+                "--day",
+                str(day),
+                "--date",
+                date_arg,
+                "--source",
+                "reddit",
+                "--max-queries",
+                str(args.reddit_max_queries),
+            ]
+        )
         run(
             [
                 sys.executable,
