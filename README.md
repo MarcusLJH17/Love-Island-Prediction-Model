@@ -6,6 +6,16 @@ The MVP is intentionally transparent: it starts with an interpretable weighted s
 
 Season 8 is now finalized in the app: Bryce and Trinity won, Aniya and Carl finished second, Melanie and Sincere finished third, and Kayda and Zach finished fourth. The Season 8 tab preserves the prediction history and locks the finale point to the actual result.
 
+## Product Screenshots
+
+### Season 8 Finale Dashboard
+
+![Season 8 finale dashboard showing final probabilities and prediction history](docs/screenshots/season8-final.png)
+
+### Season 7 Backtest View
+
+![Season 7 backtest dashboard showing historical simulation results](docs/screenshots/season7-backtest.png)
+
 ## What Is Built
 
 - Current-season dashboard for Love Island USA Season 8.
