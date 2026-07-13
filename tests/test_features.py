@@ -20,6 +20,39 @@ def test_missing_manual_signals_remain_unknown_not_negative(tmp_path):
     assert bryce["social_3d_score"] == 0.0
 
 
+def test_season_eight_active_roster_key_exit_boundaries():
+    def active_ids(day: int) -> set[str]:
+        return {contestant.id for contestant in active_contestants(8, day)}
+
+    assert "s8-sean" in active_ids(6)
+    assert "s8-sean" not in active_ids(7)
+    assert "s8-beatriz" in active_ids(10)
+    assert "s8-beatriz" not in active_ids(11)
+    assert "s8-gabriel" not in active_ids(15)
+    assert "s8-sol" not in active_ids(15)
+
+    day32 = active_ids(32)
+    assert {"s8-jen", "s8-gal", "s8-amora", "s8-caleb", "s8-jaiden"} <= day32
+    day33 = active_ids(33)
+    assert not {"s8-jen", "s8-gal", "s8-amora", "s8-caleb", "s8-jaiden"} & day33
+
+    assert {"s8-corbin", "s8-parmida"} <= active_ids(34)
+    assert not {"s8-corbin", "s8-parmida"} & active_ids(35)
+
+    assert {"s8-kc", "s8-titi", "s8-kenzie", "s8-dylan"} <= active_ids(39)
+    assert not {"s8-kc", "s8-titi", "s8-kenzie", "s8-dylan"} & active_ids(40)
+    assert active_ids(41) == {
+        "s8-aniya",
+        "s8-bryce",
+        "s8-carl",
+        "s8-kayda",
+        "s8-melanie",
+        "s8-sincere",
+        "s8-trinity",
+        "s8-zach",
+    }
+
+
 def test_build_predictions_from_social_mentions(tmp_path):
     db = tmp_path / "islandedge.sqlite"
     contestants = active_contestants(8, 28)
