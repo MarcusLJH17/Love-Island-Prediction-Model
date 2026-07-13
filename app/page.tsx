@@ -11,7 +11,7 @@ type ExportedContestantPrediction = {
   displayName: string;
   probability: number;
   score: number;
-  sourceBreakdown: Partial<Record<SignalKey | "social3d" | "social7d" | "structure", number | null>>;
+  sourceBreakdown: Partial<Record<SignalKey | "social3d" | "social7d" | "structure" | "finalOutcome", number | null>>;
   sourceAvailable: Partial<Record<SignalKey, boolean>>;
 };
 
@@ -70,6 +70,12 @@ function dayLabel(day: number) {
   return Number.isInteger(day) ? `Day ${day}` : `Day ${day.toFixed(1)}`;
 }
 
+function contestantStatusLabel(contestant: { isOG: boolean; enteredDay: number; status: string }) {
+  if (contestant.status === "winner") return "Winner";
+  if (contestant.status === "runner-up") return "Finalist";
+  return contestant.isOG ? "Original islander" : `Entered day ${contestant.enteredDay}`;
+}
+
 function chartTicks(maxValue: number) {
   const step = maxValue <= 0.3 ? 0.05 : 0.1;
   const ticks: number[] = [];
@@ -114,6 +120,9 @@ function exportedScore(contestant: ExportedContestantPrediction, signals: Record
 }
 
 function exportedProbabilityMap(contestants: ExportedContestantPrediction[], signals: Record<SignalKey, boolean>) {
+  if (contestants.some((contestant) => contestant.sourceBreakdown.finalOutcome != null)) {
+    return new Map(contestants.map((contestant) => [contestant.id, contestant.probability]));
+  }
   const scores = contestants.map((contestant) => exportedScore(contestant, signals));
   const raw = scores.map((score) => Math.exp(score * 4.6));
   const total = raw.reduce((sum, value) => sum + value, 0) || 1;
@@ -184,6 +193,7 @@ export default function Home() {
   const exportedLiveDay = activeSeason === 8 ? latestExportedDay(exportedPredictions) : null;
   const baseDataset = datasets.find((item) => item.season === activeSeason) ?? datasets[0];
   const dataset = activeSeason === 8 && exportedLiveDay ? extendDatasetToDay(baseDataset, exportedLiveDay) : baseDataset;
+  const seasonComplete = activeSeason === 8 && (exportedLiveDay ?? baseDataset.currentDay) >= 41;
   useEffect(() => {
     if (activeSeason === 8 && exportedLiveDay && cursorDay === liveDataset.currentDay) {
       setCursorDay(exportedLiveDay);
@@ -193,13 +203,13 @@ export default function Home() {
     () => buildPredictions(dataset, signals, activeSeason === 8 ? tiktokEntries : [], activeSeason === 8 ? episodeEntries : []),
     [dataset, signals, activeSeason, tiktokEntries, episodeEntries]
   );
-  const maxDay = activeSeason === 8 ? dataset.currentDay + projectionDays : dataset.currentDay;
+  const maxDay = activeSeason === 8 && !seasonComplete ? dataset.currentDay + projectionDays : dataset.currentDay;
   const selectedDay = clamp(cursorDay, 1, maxDay);
   const activeDay = Math.max(1, Math.floor(Math.min(selectedDay, dataset.currentDay)));
   const xScale = (day: number) => leftPad + ((day - 1) / (maxDay - 1)) * (chartWidth - leftPad - rightPad);
   const cursorX = xScale(selectedDay);
   const cursorIndex = clamp(Math.round(Math.min(selectedDay, dataset.currentDay)) - 1, 0, dataset.currentDay - 1);
-  const projectionMode = activeSeason === 8 && selectedDay > dataset.currentDay;
+  const projectionMode = activeSeason === 8 && !seasonComplete && selectedDay > dataset.currentDay;
   const fanMode = selectedDay < maxDay;
   const exportedDay = useMemo(() => {
     if (activeSeason !== 8 || exportedPredictions?.season !== 8) return null;
@@ -315,11 +325,11 @@ export default function Home() {
       <section className="topbar">
         <div>
           <h1>IslandEdge - Forecast Workbench</h1>
-          <p className="subtitle">{activeSeason === 8 ? `Day ${dataset.currentDay} live forecast` : `${dayLabel(selectedDay)} of ${dataset.currentDay} backtest`}</p>
+          <p className="subtitle">{activeSeason === 8 ? seasonComplete ? "Season 8 final results" : `Day ${dataset.currentDay} live forecast` : `${dayLabel(selectedDay)} of ${dataset.currentDay} backtest`}</p>
         </div>
         <div className="score-pill">
           <span>Model mode</span>
-          <strong>{activeSeason === 8 ? "Live" : "Backtest"}</strong>
+          <strong>{activeSeason === 8 ? seasonComplete ? "Final" : "Live" : "Backtest"}</strong>
         </div>
         <div className="tabs" aria-label="Season tabs">
           <button type="button" data-season-tab="8" className={activeSeason === 8 ? "active" : ""} onClick={() => selectSeason(8)} onPointerDown={() => selectSeason(8)}>
@@ -358,7 +368,7 @@ export default function Home() {
         <div className="panel status">
           <div className="panel-title"><BarChart3 size={17} /> Cursor State</div>
           <strong>{projectionMode ? `+${(selectedDay - dataset.currentDay).toFixed(1)}d` : dayLabel(selectedDay)}</strong>
-          <span>{projectionMode ? "Momentum projection is shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
+          <span>{projectionMode ? "Momentum projection is shown in the cards." : activeSeason === 7 ? "Backtest simulation starts at the selected historical day." : seasonComplete ? "Finale outcome is locked from the actual Season 8 result." : exportedDay ? "Exported social-signal predictions are shown in the cards." : "Seeded model distribution is shown in the cards."}</span>
         </div>
         <div className="panel status">
           <div className="panel-title"><Activity size={17} /> Source Health</div>
@@ -371,9 +381,9 @@ export default function Home() {
         <div className="chart-heading">
           <div>
             <p>Panel 1</p>
-            <h2>{activeSeason === 8 ? `Live forecast - ${dayLabel(selectedDay).toLowerCase()}` : `Backtest - day 1 to ${selectedDay.toFixed(1)}`}</h2>
+            <h2>{activeSeason === 8 ? seasonComplete ? `Final result - ${dayLabel(selectedDay).toLowerCase()}` : `Live forecast - ${dayLabel(selectedDay).toLowerCase()}` : `Backtest - day 1 to ${selectedDay.toFixed(1)}`}</h2>
           </div>
-          <span>{activeSeason === 8 ? "Solid = history - dashed = projection" : "Solid = historical model value - dashed = projection"}</span>
+          <span>{activeSeason === 8 ? seasonComplete ? "Solid = model history - final point = actual result" : "Solid = history - dashed = projection" : "Solid = historical model value - dashed = projection"}</span>
         </div>
         <svg
           ref={chartRef}
@@ -387,7 +397,7 @@ export default function Home() {
           onPointerMove={(event) => event.buttons === 1 && handlePointer(event)}
         >
           <rect x={leftPad} y={topPad} width={xScale(dataset.currentDay) - leftPad} height={chartHeight - topPad - bottomPad} className="history-zone" />
-          {activeSeason === 8 && <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />}
+          {activeSeason === 8 && !seasonComplete && <rect x={xScale(dataset.currentDay)} y={topPad} width={xScale(maxDay) - xScale(dataset.currentDay)} height={chartHeight - topPad - bottomPad} className="projection-zone" />}
           {chartTicks(chartMaxValue).map((value) => (
             <g key={value}>
               <line x1={leftPad} x2={chartWidth - rightPad} y1={yScale(value)} y2={yScale(value)} className="grid" />
@@ -424,7 +434,7 @@ export default function Home() {
           {activeSeason === 8 ? (
             <>
               <text x={xScale(dataset.currentDay) - 32} y={chartHeight - 10} className="axis">Today</text>
-              <text x={chartWidth - 116} y={chartHeight - 10} className="axis">Projection</text>
+              <text x={chartWidth - 116} y={chartHeight - 10} className="axis">{seasonComplete ? "Finale" : "Projection"}</text>
             </>
           ) : (
             <text x={chartWidth - 112} y={chartHeight - 10} className="axis">Finale</text>
@@ -459,7 +469,7 @@ export default function Home() {
               <IslanderPhoto contestant={prediction.contestant} />
               <div>
                 <h2>{prediction.contestant.displayName}</h2>
-                <p>{prediction.contestant.isOG ? "Original islander" : `Entered day ${prediction.contestant.enteredDay}`}</p>
+                <p>{contestantStatusLabel(prediction.contestant)}</p>
               </div>
               <strong>{displayPct(prediction.displayProbability)}</strong>
               {fanMode && <span>{displayPct(low)} to {displayPct(high)}</span>}
@@ -468,7 +478,27 @@ export default function Home() {
         })}
       </section>
 
-      {activeSeason === 8 ? (
+      {activeSeason === 8 && seasonComplete ? (
+        <section className="finale-panel panel">
+          <div className="panel-title"><Activity size={17} /> Season 8 Result</div>
+          <div className="winner-lockup">
+            <strong>Bryce / Trinity</strong>
+            <span>Winners</span>
+          </div>
+          <div className="result-row">
+            <span>2nd place</span>
+            <strong>Aniya / Carl</strong>
+          </div>
+          <div className="result-row">
+            <span>3rd place</span>
+            <strong>Melanie / Sincere</strong>
+          </div>
+          <div className="result-row">
+            <span>4th place</span>
+            <strong>Kayda / Zach</strong>
+          </div>
+        </section>
+      ) : activeSeason === 8 ? (
         <section className="forms-grid">
           <form className="panel entry-form" onSubmit={submitTikTok}>
             <div className="panel-title"><Eye size={17} /> TikTok Observation</div>

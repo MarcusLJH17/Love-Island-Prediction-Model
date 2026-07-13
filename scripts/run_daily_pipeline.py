@@ -9,6 +9,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
 SEASON_START_DATES = {8: date(2026, 6, 2)}
+SEASON_FINAL_DATES = {8: date(2026, 7, 12)}
 
 
 def parse_args() -> argparse.Namespace:
@@ -26,6 +27,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--twitter-max-queries", type=int, default=8)
     parser.add_argument("--skip-scrape", action="store_true")
     parser.add_argument("--skip-trends", action="store_true")
+    parser.add_argument("--force-after-finale", action="store_true", help="Run even when the feature date is after the configured finale.")
     return parser.parse_args()
 
 
@@ -54,6 +56,14 @@ def run(command: list[str]) -> None:
 def main() -> None:
     args = parse_args()
     feature_date = resolve_feature_date(args)
+    final_date = SEASON_FINAL_DATES.get(args.season)
+    if final_date is not None and feature_date > final_date and not args.force_after_finale:
+        print(
+            f"Season {args.season} finale date is {final_date.isoformat()}; "
+            f"skipping daily update for {feature_date.isoformat()}.",
+            flush=True,
+        )
+        return
     day = resolve_day(args, feature_date)
     date_arg = feature_date.isoformat()
     print(f"Running Season {args.season} Day {day} for {date_arg}", flush=True)

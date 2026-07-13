@@ -4,6 +4,8 @@ IslandEdge is a portfolio MVP for forecasting Love Island USA outcomes with a mi
 
 The MVP is intentionally transparent: it starts with an interpretable weighted scoring model instead of a black-box classifier. That makes it easier to learn what each signal is doing, inspect ablations, and later replace the scorer with sklearn/XGBoost once more labeled history exists.
 
+Season 8 is now finalized in the app: Bryce and Trinity won, Aniya and Carl finished second, Melanie and Sincere finished third, and Kayda and Zach finished fourth. The Season 8 tab preserves the prediction history and locks the finale point to the actual result.
+
 ## What Is Built
 
 - Current-season dashboard for Love Island USA Season 8.
@@ -139,6 +141,10 @@ The pipeline can infer the Love Island season day from the date, using Season 8'
 ```bash
 python scripts/run_daily_pipeline.py --target-date yesterday
 ```
+
+Season 8's finale date is configured as July 12, 2026. The daily pipeline runs through that finale date, then exits without scraping for later dates unless `--force-after-finale` is passed.
+
+After the finale, `scripts/finalize_season8.py` writes the actual final placements into the local prediction store before exporting frontend JSON.
 
 9. Run the app and refresh the Season 8 tab:
 

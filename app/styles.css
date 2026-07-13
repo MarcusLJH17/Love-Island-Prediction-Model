@@ -423,6 +423,33 @@ input[type="range"] {
   margin-top: 16px;
 }
 
+.finale-panel {
+  display: grid;
+  gap: 12px;
+  margin-top: 16px;
+}
+
+.winner-lockup {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px 0;
+  border-top: 1px solid var(--line);
+}
+
+.winner-lockup strong {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: clamp(1.8rem, 2.5vw, 3rem);
+}
+
+.winner-lockup span {
+  color: var(--gold);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0;
+}
+
 .backtest p {
   color: var(--muted);
 }
