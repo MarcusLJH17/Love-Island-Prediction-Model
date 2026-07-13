@@ -27,6 +27,10 @@ def export_predictions(database_path: Path, season: int, output_path: Path) -> d
         contestant = contestants.get(row["contestant_id"])
         if contestant is None:
             continue
+        if row["day"] < contestant.entered_day:
+            continue
+        if contestant.exit_day is not None and row["day"] > contestant.exit_day:
+            continue
         grouped[(row["feature_date"], row["day"])].append(
             {
                 "id": row["contestant_id"],
@@ -37,6 +41,11 @@ def export_predictions(database_path: Path, season: int, output_path: Path) -> d
                 "sourceAvailable": json.loads(row["source_availability_json"]),
             }
         )
+    for contestants_for_day in grouped.values():
+        total = sum(contestant["probability"] for contestant in contestants_for_day)
+        if total > 0:
+            for contestant in contestants_for_day:
+                contestant["probability"] = contestant["probability"] / total
     payload = {
         "season": season,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
